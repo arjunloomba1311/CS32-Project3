@@ -20,6 +20,7 @@ public:
   virtual int move();
   virtual void cleanUp();
   bool isVirtualBlockingObjectAt(double x,double y);
+~StudentWorld();
 
 private:
     vector<Actor*> actors;

@@ -100,7 +100,7 @@ int StudentWorld::move()
     }
 
     decLives();
-    return GWSTATUS_CONTINUE_GAME; //need to change to GWSTATUS DIED//
+    return GWSTATUS_CONTINUE_GAME; //need to change to GWSTATUS DIED eventually//
 }
 
 bool StudentWorld::isVirtualBlockingObjectAt(double x, double y) {
@@ -129,4 +129,8 @@ void StudentWorld::cleanUp()
     
     actors.clear();
     
+}
+
+StudentWorld::~StudentWorld() {
+    cleanUp();
 }
