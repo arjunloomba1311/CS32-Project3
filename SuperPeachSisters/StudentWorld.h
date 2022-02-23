@@ -20,6 +20,10 @@ public:
   virtual int init();
   virtual int move();
   virtual void cleanUp();
+    
+    
+  void AppendToActors(char type, double x, double y);
+  void bonkAt(double x, double y);
   bool canMoveThroughObject(double x,double y);
   
 ~StudentWorld();

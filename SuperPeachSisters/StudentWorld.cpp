@@ -62,15 +62,18 @@ int StudentWorld::init()
                     case Level::flag:
                         break;
                     case Level::block:
-                        actors.push_back(new Block(this, x, y));
+                        actors.push_back(new Block(this, x, y, 'n'));
                         break;
                     case Level::star_goodie_block:
+                        actors.push_back(new Block(this, x, y, 's'));
                         break;
                     case Level::piranha:
                         break;
                     case Level::mushroom_goodie_block:
+                        actors.push_back(new Block(this, x, y, 'm'));
                         break;
                     case Level::flower_goodie_block:
+                        actors.push_back(new Block(this, x, y, 'f'));
                         break;
                     case Level::pipe:
                         actors.push_back(new Pipe(this, x, y));
@@ -105,6 +108,23 @@ int StudentWorld::move()
     return GWSTATUS_CONTINUE_GAME; //need to change to GWSTATUS DIED eventually//
 }
 
+void StudentWorld::AppendToActors(char type, double x, double y) {
+    switch(type) {
+        case 'm':
+            actors.push_back(new Mushroom(this, x, y));
+    }
+}
+
+void StudentWorld::bonkAt(double x, double y) {
+    vector<Actor*>::iterator it;
+    
+    for (it = actors.begin(); it != actors.end(); it++) {
+        if ((abs(x - (*it)->getX()) < SPRITE_WIDTH) && abs(y - (*it)->getY()) < SPRITE_HEIGHT) {
+            (*it)->bonk();
+        }
+    }
+}
+
 bool StudentWorld::canMoveThroughObject(double x, double y) {
     vector<Actor*>::iterator it;
     
@@ -112,7 +132,7 @@ bool StudentWorld::canMoveThroughObject(double x, double y) {
     for (it = actors.begin(); it != actors.end(); it++) {
         
         if ((abs(x - (*it)->getX()) < SPRITE_WIDTH) && abs(y - (*it)->getY()) < SPRITE_HEIGHT) {
-            
+    
             if (!(*it)->canPassThrough()) {
                 return false;
             }
@@ -126,7 +146,6 @@ void StudentWorld::cleanUp()
 {
     
     vector<Actor*>::iterator it;
-    
     for (it = actors.begin(); it != actors.end(); it++) {
         delete *it;
     }

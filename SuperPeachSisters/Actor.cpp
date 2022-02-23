@@ -30,17 +30,45 @@ StudentWorld* Actor::getWorld() {
     return m_sw;
 }
 
+//-----------Goodies Implementation ----------//
+
+Goodies::Goodies(StudentWorld *p_sw, int startX, int startY, int ImageID)
+:Actor(p_sw, ImageID, startX, startY, 2, 1.0) // depth, & size are constant
+
+{
+    
+}
+
+Mushroom::Mushroom(StudentWorld *p_sw, int startX, int startY)
+:Goodies(p_sw, startX, startY, IID_MUSHROOM) {}
+
+void Mushroom::doSomething() {};
+
 //------------Block Implementation------------//
 
-Block::Block(StudentWorld *p_sw, int startX, int startY)
-:Actor(p_sw, IID_BLOCK, startX, startY, 0, 1.0) // dir, depth, & size are constant
-{}
+Block::Block(StudentWorld *p_sw, int startX, int startY, char power)
+:Actor(p_sw, IID_BLOCK, startX, startY, 0, 1.0) //  depth, & size are constant
+{
+    m_power = power;
+}
 
 bool Block::canPassThrough() {
     return false;
 }
 
+char Block::getPower() {
+    return m_power;
+}
+
 void Block::doSomething() {}
+
+void Block::bonk() {
+    getWorld()->playSound(SOUND_PLAYER_BONK);
+    
+    if (m_power != 'n') {
+        getWorld()->AppendToActors(m_power, getX(), getY()+SPRITE_HEIGHT);
+    }
+}
 
 //------------Pipe Implementation------------//
 Pipe::Pipe(StudentWorld *p_sw, int startX, int startY) :Actor(p_sw, IID_PIPE, startX, startY, 0, 1.0) {}
@@ -57,6 +85,8 @@ Peach::Peach(StudentWorld *p_sw, int startX, int startY) :Actor(p_sw, IID_PEACH,
     m_jumpDist = 0; // no mushroom power on initialization
 }
 
+void Peach::bonk() {}
+
 void Peach::doSomething() {
     
     if (m_jumpDist > 0) {
@@ -67,6 +97,7 @@ void Peach::doSomething() {
         }
         
         else {
+            getWorld()->bonkAt(getX(), getY() + SPRITE_HEIGHT/2);
             m_jumpDist = 0;
         }
         
@@ -119,6 +150,11 @@ void Peach::doSomething() {
                 }
                 
                 else {
+                    //we need to bonk the block.
+                    
+                    getWorld()->bonkAt(currX, currY);
+                    
+                    //can no longer keep jumping
                     m_jumpDist = 0;
                 }
                 
