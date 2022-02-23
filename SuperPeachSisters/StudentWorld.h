@@ -11,6 +11,7 @@ using namespace std;
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
 class Actor;
+class Peach;
 
 class StudentWorld : public GameWorld
 {
@@ -19,11 +20,13 @@ public:
   virtual int init();
   virtual int move();
   virtual void cleanUp();
-  bool isVirtualBlockingObjectAt(double x,double y);
+  bool canMoveThroughObject(double x,double y);
+  
 ~StudentWorld();
 
 private:
     vector<Actor*> actors;
+    Peach* m_peach;
 };
 
 #endif // STUDENTWORLD_H_

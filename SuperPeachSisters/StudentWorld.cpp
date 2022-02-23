@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>  // defines the type std::ostringstream
 #include <iomanip>  // defines the manipulator setw
+#include "math.h"
 
 using namespace std;
 
@@ -56,12 +57,12 @@ int StudentWorld::init()
                     case Level::goomba:
                         break;
                     case Level::peach:
-                        actors.push_back(new Peach(this, IID_PEACH, x, y));
+                        actors.push_back(new Peach(this, x, y));
                         break;
                     case Level::flag:
                         break;
                     case Level::block:
-                        actors.push_back(new Block(this, IID_BLOCK, x, y));
+                        actors.push_back(new Block(this, x, y));
                         break;
                     case Level::star_goodie_block:
                         break;
@@ -72,6 +73,7 @@ int StudentWorld::init()
                     case Level::flower_goodie_block:
                         break;
                     case Level::pipe:
+                        actors.push_back(new Pipe(this, x, y));
                         break;
                     case Level::mario:
                         break;
@@ -103,19 +105,21 @@ int StudentWorld::move()
     return GWSTATUS_CONTINUE_GAME; //need to change to GWSTATUS DIED eventually//
 }
 
-bool StudentWorld::isVirtualBlockingObjectAt(double x, double y) {
+bool StudentWorld::canMoveThroughObject(double x, double y) {
     vector<Actor*>::iterator it;
     
     //check if a block is blocking ahead then should not pass it.
     for (it = actors.begin(); it != actors.end(); it++) {
-        if (((*it)->getX() == x)|| (*it)->getX() < 0) {
-            if ((*it)->getY() == y) {
-            return true;
+        
+        if ((abs(x - (*it)->getX()) < SPRITE_WIDTH) && abs(y - (*it)->getY()) < SPRITE_HEIGHT) {
+            
+            if (!(*it)->canPassThrough()) {
+                return false;
             }
         }
     }
-
-    return false;
+    
+    return true;
 }
 
 void StudentWorld::cleanUp()

@@ -16,9 +16,9 @@ public:
     void killActor();
     virtual void setDir(int dir);
     virtual void doSomething() = 0;
-    virtual void bonk() = 0;
     StudentWorld* getWorld();
-
+    virtual bool canPassThrough(); //i.e. can the actor pass through the object or not.
+    
 private:
     bool m_isalive = true; //true is for alive and false is for dead.
     StudentWorld *m_sw;
@@ -26,24 +26,33 @@ private:
 
 class Block: public Actor {
 public:
-    Block(StudentWorld* p_sw, int ImageID, int startX, int startY);
+    Block(StudentWorld* p_sw, int startX, int startY);
     virtual void doSomething();
-    virtual void bonk();
+    virtual bool canPassThrough();
 private:
 };
 
-class Peach: public Actor {
-    
+class Pipe: public Actor {
 public:
-    Peach(StudentWorld *p_sw, int ImageID, int startX, int startY);
+    Pipe(StudentWorld* psw, int startX, int startY);
     virtual void doSomething();
-    virtual void bonk() {};
+    virtual bool canPassThrough();
+};
+
+class Peach: public Actor {
+public:
+    Peach(StudentWorld *p_sw, int startX, int startY);
+    virtual void doSomething();
 private:
     int m_hitPoints = 1;
     int m_invincibilityTicker = 0;
     bool m_hasStarPower = false;
     bool m_hasFirePower = false;
-    bool m_hasMushroomPower = false;
+    bool m_hasJumpPower = false;
+    
+    int m_jumpDist;
+    bool m_isJumping = false;
+
 };
 
 
