@@ -5,7 +5,7 @@
 
 //------------Actor Implementation------------//
 
-Actor::Actor(StudentWorld *p_sw, int ImageID, int startX, int startY, int depth, int size) :GraphObject(ImageID, startX, startY, depth, size = 1.0), m_sw(p_sw)
+Actor::Actor(StudentWorld *p_sw, int ImageID, int startX, int startY, int depth, int size) :GraphObject(ImageID, startX, startY, depth, size), m_sw(p_sw)
 {
 };
 
@@ -30,7 +30,7 @@ StudentWorld* Actor::getWorld() {
 //-----------Goodies Implementation ----------//
 
 Goodies::Goodies(StudentWorld *p_sw, int startX, int startY, int ImageID)
-:Actor(p_sw, ImageID, startX, startY, 2, 1.0) // depth, & size are constant
+:Actor(p_sw, ImageID, startX, startY, 1, 1) // depth, & size are constant
 
 {}
 
@@ -124,7 +124,17 @@ Star::Star(StudentWorld *p_sw, int startX, int startY) :Goodies(p_sw, startX, st
 
 void Star::doSomething() {
     
-    if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
+    if (getWorld()->isIntersecting(getX(), getY())) {
+        getWorld()->getPeach()->increasePlayerScore(100);
+        getWorld()->getPeach()->setHitPoints(2);
+        getWorld()->getPeach()->setStarPower();
+        this->killActor();
+        
+        getWorld()->playSound(SOUND_PLAYER_POWERUP);
+
+    }
+    
+    else if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
         moveTo(getX(), getY() - 2);
     }
     
@@ -137,9 +147,26 @@ void Star::doSomething() {
 Checkpoint::Checkpoint(StudentWorld *p_sw, int startX, int startY, int ImageID)
 :Actor(p_sw, ImageID, startX, startY, 1, 1) {}
 
+
 //-----------Flag Implementation ----------//
 Flag::Flag(StudentWorld *p_sw, int startX, int startY)
 :Checkpoint(p_sw, startX, startY, IID_FLAG) {}
+
+void Flag::doSomething() {
+    if (getWorld()->isIntersecting(getX(), getY())) {
+        getWorld()->playSound(SOUND_FINISHED_LEVEL);
+        getWorld()->getPeach()->increasePlayerScore(1000);
+        
+        getWorld()->increaseLevel();
+
+        this->killActor();
+    }
+}
+
+//-----------Mario Implementation ---------//
+
+Mario::Mario(StudentWorld *p_sw, int startX, int startY)
+:Checkpoint(p_sw, startX, startY, IID_MARIO) {}
 
 //------------Block Implementation------------//
 
@@ -200,6 +227,7 @@ void Peach::setFirePower() {
 
 void Peach::setStarPower() {
     m_hasStarPower = true;
+    m_starPowerTicker = 150;
 }
 
 void Peach::increasePlayerScore(int num) {
@@ -211,7 +239,12 @@ void Peach::setHitPoints(int num) {
 }
 
 void Peach::doSomething() {
-        
+    
+    //decrease star power
+    if (m_starPowerTicker > 0) {
+        m_starPowerTicker --;
+    }
+
     if (m_jumpDist > 0) {
         
         if ((getWorld()->canMoveThroughObject(getX(), getY() + SPRITE_HEIGHT/2))) {
@@ -230,6 +263,7 @@ void Peach::doSomething() {
         if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
             moveTo(getX(), getY() - SPRITE_HEIGHT/2);
         }
+        
     }
     
     int ch;
@@ -293,7 +327,6 @@ void Peach::doSomething() {
                 }
                 
             }
-            
 
         break;
             

@@ -48,6 +48,7 @@ public:
 private:
     int m_hitPoints = 1;
     int m_invincibilityTicker = 0;
+    int m_starPowerTicker = 0;
     bool m_hasStarPower = false;
     bool m_hasFirePower = false;
     bool m_hasJumpPower = false;
@@ -112,6 +113,8 @@ public:
 private:
 };
 
+//------Declaration of Enemies------//
+
 //------CheckPoints Declaration------//
 
 class Checkpoint: public Actor {
@@ -123,9 +126,15 @@ public:
 class Flag: public Checkpoint {
 public:
     Flag(StudentWorld *p_sw, int startX, int startY);
-    virtual void doSomething() {};
+    virtual void doSomething();
 }; 
 
+class Mario: public Checkpoint {
+public:
+    Mario(StudentWorld *p_sw, int startX, int startY);
+    virtual void doSomething() {};
+private:
+}; 
 
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 

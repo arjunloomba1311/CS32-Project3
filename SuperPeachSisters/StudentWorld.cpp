@@ -22,6 +22,9 @@ StudentWorld::StudentWorld(string assetPath)
 int StudentWorld::init()
 {
     
+    //set completed level to false
+    m_completed_level = false;
+    
     //creating the level file
     Level lev(assetPath());
     int curr_lev = getLevel();
@@ -81,6 +84,7 @@ int StudentWorld::init()
                         actors.push_back(new Pipe(this, x, y));
                         break;
                     case Level::mario:
+                        actors.push_back(new Mario(this, x, y));
                         break;
                 }
             }
@@ -120,7 +124,16 @@ int StudentWorld::move()
     }
 
     decLives();
+    
+    if (m_completed_level) {
+        return GWSTATUS_FINISHED_LEVEL;
+    }
+    
     return GWSTATUS_CONTINUE_GAME; //need to change to GWSTATUS DIED eventually//
+}
+
+void StudentWorld::increaseLevel() {
+    m_completed_level = true;
 }
 
 void StudentWorld::AppendToActors(char type, double x, double y) {
@@ -154,6 +167,8 @@ bool StudentWorld::isIntersecting(double x, double y) {
 
 }
 
+
+
 Peach* StudentWorld::getPeach() {
     return m_peach;
 }
@@ -177,7 +192,7 @@ bool StudentWorld::canMoveThroughObject(double x, double y) {
         if ((abs(x - (*it)->getX()) < SPRITE_WIDTH) && abs(y - (*it)->getY()) < SPRITE_HEIGHT) {
     
             if (!(*it)->canPassThrough()) {
-                return false;
+                return false; 
             }
         }
     }
