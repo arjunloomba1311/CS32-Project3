@@ -99,7 +99,17 @@ Flower::Flower(StudentWorld *p_sw, int startX, int startY) :Goodies(p_sw, startX
 
 void Flower::doSomething() {
     
-    if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
+    if (getWorld()->isIntersecting(getX(), getY())) {
+        getWorld()->getPeach()->increasePlayerScore(50);
+        getWorld()->getPeach()->setHitPoints(2);
+        getWorld()->getPeach()->setFirePower();
+        this->killActor();
+        
+        getWorld()->playSound(SOUND_PLAYER_POWERUP);
+
+    }
+    
+    else if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
         moveTo(getX(), getY() - 2);
     }
     

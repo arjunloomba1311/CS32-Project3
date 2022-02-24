@@ -195,7 +195,7 @@ void StudentWorld::cleanUp()
     
     actors.clear();
     
-}
+    }
 
 StudentWorld::~StudentWorld() {
     cleanUp();
