@@ -57,9 +57,11 @@ int StudentWorld::init()
                     case Level::goomba:
                         break;
                     case Level::peach:
-                        actors.push_back(new Peach(this, x, y));
+                        m_peach = new Peach(this, x, y);
+                        actors.push_back(m_peach);
                         break;
                     case Level::flag:
+                        actors.push_back(new Flag(this, x, y));
                         break;
                     case Level::block:
                         actors.push_back(new Block(this, x, y, 'n'));
@@ -103,6 +105,19 @@ int StudentWorld::move()
             (*it)->doSomething();
         }
     }
+    
+    it = actors.begin();
+    
+    while (it != actors.end()) {
+        if (!(*it)->getAliveStatus()) {
+            delete (*it);
+            it = actors.erase(it);
+        }
+        
+        else {
+            it++;
+        }
+    }
 
     decLives();
     return GWSTATUS_CONTINUE_GAME; //need to change to GWSTATUS DIED eventually//
@@ -112,7 +127,35 @@ void StudentWorld::AppendToActors(char type, double x, double y) {
     switch(type) {
         case 'm':
             actors.push_back(new Mushroom(this, x, y));
+            break;
+        case 'f':
+            actors.push_back(new Flower(this, x, y));
+            break;
+        case 's':
+            actors.push_back(new Star(this, x, y));
+        default:
+            break;
     }
+}
+
+bool StudentWorld::isIntersecting(double x, double y) {
+    
+    vector<Actor*>::iterator it;
+    
+    for (it = actors.begin(); it != actors.end(); it++) {
+        if ((abs(x - (*it)->getX()) < SPRITE_WIDTH/2) && abs(y - (*it)->getY()) < SPRITE_HEIGHT/2) {
+            if ((*it)->isPlayer()) { //check if it's intersecting with peach or not.
+                return true;
+            }
+        }
+    }
+    
+    return false;
+
+}
+
+Peach* StudentWorld::getPeach() {
+    return m_peach;
 }
 
 void StudentWorld::bonkAt(double x, double y) {

@@ -20,17 +20,20 @@ public:
   virtual int init();
   virtual int move();
   virtual void cleanUp();
-    
-    
+  Peach* getPeach();
+
+  //extra helper functions -
   void AppendToActors(char type, double x, double y);
   void bonkAt(double x, double y);
   bool canMoveThroughObject(double x,double y);
+  bool isIntersecting(double x, double y);
   
 ~StudentWorld();
 
 private:
     vector<Actor*> actors;
     Peach* m_peach;
+    bool m_hasGoody = false;
 };
 
 #endif // STUDENTWORLD_H_
