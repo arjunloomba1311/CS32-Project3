@@ -45,6 +45,8 @@ void peachFireball::doSomething() {
     
     //if either statements are true then fireball MUST DIE!
     
+    //Need to Implement Falling!
+    
     int dir = this->getDirection();
         
     if (dir == 0) {
