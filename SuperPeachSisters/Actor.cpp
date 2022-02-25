@@ -27,6 +27,79 @@ StudentWorld* Actor::getWorld() {
     return m_sw;
 }
 
+//-----------Enemies Implementation ----------//
+Enemies::Enemies(StudentWorld *p_sw, int startX, int startY,  int ImageID)
+:Actor(p_sw, ImageID, startX, startY, 0, 1) {}
+
+void Enemies::doSomething() {};
+
+void Enemies::bonk() {};
+
+void Enemies::move() {
+    int dir = this->getDirection();
+    
+    
+    if (dir >= 0 && dir < 180) {
+        
+        
+        if (getWorld()->canMoveThroughObject(getX() + SPRITE_WIDTH/2, getY() - 1) || !getWorld()->canMoveThroughObject(getX() + 1, getY())) {
+            this->setDirection(180);
+        }
+        
+        else {
+            
+            moveTo(getX()+1, getY());
+
+        }
+    }
+    
+    else if (dir >= 180 && dir < 360) {
+        if (getWorld()->canMoveThroughObject(getX() - SPRITE_WIDTH/2, getY() - 1) || !getWorld()->canMoveThroughObject(getX() -1 , getY())) {
+            this->setDirection(0);
+        }
+        
+        else {
+            
+            moveTo(getX()-1, getY());
+
+        }
+    }
+    
+};
+
+
+//-----------Goomba Implementation ----------//
+
+Goomba::Goomba(StudentWorld *p_sw, int startX, int startY)
+:Enemies(p_sw, startX, startY, IID_GOOMBA) {};
+
+void Goomba::doSomething() {
+    this->move();
+    if (getWorld()->isIntersecting(getX(), getY())) {
+        getWorld()->getPeach()->bonk();
+    }
+};
+
+//for when goomba is hit
+void Goomba::bonk() {};
+
+//-----------Koopa Implementation ----------//
+
+Koopa::Koopa(StudentWorld *p_sw, int startX, int startY)
+:Enemies(p_sw, startX, startY, IID_KOOPA) {};
+
+void Koopa::doSomething() {
+    this->move();
+    
+    if (getWorld()->isIntersecting(getX(), getY())) {
+        getWorld()->getPeach()->bonk();
+    }
+};
+
+//for when koopa is hit
+void Koopa::bonk() {};
+
+
 //-----------Goodies Implementation ----------//
 
 Goodies::Goodies(StudentWorld *p_sw, int startX, int startY, int ImageID)
@@ -43,7 +116,9 @@ void Goodies::move() {
         }
         
         else {
+            
             this->setDirection(180);
+
         }
     }
     
@@ -54,7 +129,9 @@ void Goodies::move() {
         }
         
         else {
+            
             this->setDirection(0);
+
         }
     }
 }
@@ -75,9 +152,7 @@ void Mushroom::doSomething() {
         this->killActor();
         
         getWorld()->playSound(SOUND_PLAYER_POWERUP);
-        
-        cout << "is intersecting" << endl;
-        
+                
         return;
     }
     
@@ -195,6 +270,7 @@ void Block::bonk() {
     
     if (m_power != 'n') {
         getWorld()->AppendToActors(m_power, getX(), getY()+SPRITE_HEIGHT);
+        getWorld()->playSound(SOUND_POWERUP_APPEARS);
         this->removePower();
     }
 }
@@ -215,7 +291,26 @@ Peach::Peach(StudentWorld *p_sw, int startX, int startY) :Actor(p_sw, IID_PEACH,
     m_jumpDist = 0; // no mushroom power on initialization
 }
 
-void Peach::bonk() {}
+void Peach::bonk() {
+    
+    if (m_tempInvincibilityTicker > 0 || m_starPowerTicker > 0) {
+        return;
+    }
+    
+    m_hitPoints--;
+    m_tempInvincibilityTicker = 10;
+    m_hasFirePower = false;
+    m_hasJumpPower = false;
+    
+    if (m_hitPoints > 0) {
+        getWorld()->playSound(SOUND_PLAYER_HURT);
+    }
+    
+    if (m_hitPoints <= 0) {
+        this->killActor();
+    }
+    
+}
 
 void Peach::setJumpPower() {
     m_hasJumpPower = true;
@@ -226,7 +321,6 @@ void Peach::setFirePower() {
 }
 
 void Peach::setStarPower() {
-    m_hasStarPower = true;
     m_starPowerTicker = 150;
 }
 
@@ -235,14 +329,22 @@ void Peach::increasePlayerScore(int num) {
 }
 
 void Peach::setHitPoints(int num) {
-    m_hitPoints += num;
+    m_hitPoints = num;
+}
+    
+void Peach::setTempInvicibility(int num) {
+    m_tempInvincibilityTicker = 10;
 }
 
 void Peach::doSomething() {
-    
+        
     //decrease star power
     if (m_starPowerTicker > 0) {
-        m_starPowerTicker --;
+        m_starPowerTicker--;
+    }
+    
+    if (m_tempInvincibilityTicker > 0) {
+        m_tempInvincibilityTicker--;
     }
 
     if (m_jumpDist > 0) {

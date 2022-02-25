@@ -56,8 +56,10 @@ int StudentWorld::init()
                     case Level::empty:
                         break;
                     case Level::koopa:
+                        actors.push_back(new Koopa(this, x, y));
                         break;
                     case Level::goomba:
+                        actors.push_back(new Goomba(this, x, y));
                         break;
                     case Level::peach:
                         m_peach = new Peach(this, x, y);
@@ -98,10 +100,23 @@ int StudentWorld::init()
 
 int StudentWorld::move()
 {
-    // This code is here merely to allow the game to build, run, and terminate after you hit enter.
-    // Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
+        
+    if (!getPeach()->getAliveStatus()) {
+        decLives();
+        
+        if (getLives() <= 0) {
+            playSound(SOUND_GAME_OVER);
+        }
+        
+        else {
+        
+        playSound(SOUND_PLAYER_DIE);
+            
+        }
+        
+        return GWSTATUS_PLAYER_DIED;
+    }
     
-    // to iterator over the *Actor vector
     vector<Actor*>::iterator it;
         
     for (it = actors.begin(); it != actors.end(); it++) {
@@ -122,8 +137,6 @@ int StudentWorld::move()
             it++;
         }
     }
-
-    decLives();
     
     if (m_completed_level) {
         return GWSTATUS_FINISHED_LEVEL;
@@ -178,7 +191,9 @@ void StudentWorld::bonkAt(double x, double y) {
     
     for (it = actors.begin(); it != actors.end(); it++) {
         if ((abs(x - (*it)->getX()) < SPRITE_WIDTH) && abs(y - (*it)->getY()) < SPRITE_HEIGHT) {
+            if (!(*it)->canPassThrough()) {
             (*it)->bonk();
+            }
         }
     }
 }

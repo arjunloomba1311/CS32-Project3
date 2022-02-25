@@ -20,6 +20,8 @@ public:
     virtual void bonk() {};
     
     virtual bool isPlayer() {return false;};
+    virtual bool isDamageable() {return false;};
+
     
 private:
     bool m_isalive = true; //true is for alive and false is for dead.
@@ -43,13 +45,13 @@ public:
     //change other attributes
     void increasePlayerScore(int num);
     void setHitPoints(int num);
+    void setTempInvicibility(int num);
     
     
 private:
     int m_hitPoints = 1;
-    int m_invincibilityTicker = 0;
+    int m_tempInvincibilityTicker = 0;
     int m_starPowerTicker = 0;
-    bool m_hasStarPower = false;
     bool m_hasFirePower = false;
     bool m_hasJumpPower = false;
     
@@ -113,7 +115,35 @@ public:
 private:
 };
 
-//------Declaration of Enemies------//
+//------Declaration of Enemies-------//
+
+class Enemies: public Actor {
+public:
+    Enemies(StudentWorld *p_sw, int startX, int startY,  int ImageID);
+    virtual void doSomething();
+    virtual void bonk();
+    virtual void move();
+    ~Enemies() {};
+private:
+};
+
+class Goomba: public Enemies {
+public:
+    Goomba(StudentWorld *p_sw, int startX, int startY);
+    virtual void doSomething();
+    virtual void bonk();
+    ~Goomba() {};
+private:
+};
+
+class Koopa: public Enemies {
+public:
+    Koopa(StudentWorld *p_sw, int startX, int startY);
+    virtual void doSomething();
+    virtual void bonk();
+    ~Koopa() {};
+private:
+};
 
 //------CheckPoints Declaration------//
 
