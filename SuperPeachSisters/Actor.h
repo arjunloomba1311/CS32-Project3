@@ -18,6 +18,7 @@ public:
     StudentWorld* getWorld();
     virtual bool canPassThrough(); //i.e. can the actor pass through the object or not.
     virtual void bonk() {};
+    virtual void damage() {};
     
     virtual bool isPlayer() {return false;};
     virtual bool isDamageable() {return false;};
@@ -46,6 +47,7 @@ public:
     void increasePlayerScore(int num);
     void setHitPoints(int num);
     void setTempInvicibility(int num);
+    void setRechargeTime(int num);
     
     //output power status
     bool hasStarPower();
@@ -55,6 +57,8 @@ private:
     int m_hitPoints = 1;
     int m_tempInvincibilityTicker = 0;
     int m_starPowerTicker = 0;
+    int m_time_to_recharge_before_next_fire = 0;
+
     bool m_hasFirePower = false;
     bool m_hasJumpPower = false;
     
@@ -126,6 +130,7 @@ public:
     virtual void doSomething();
     virtual void bonk();
     virtual void move();
+    virtual void damage();
     virtual bool isDamageable(){return true;};
     ~Enemies() {};
 private:
@@ -136,6 +141,7 @@ public:
     Goomba(StudentWorld *p_sw, int startX, int startY);
     virtual void doSomething();
     virtual void bonk();
+    virtual void damage();
     ~Goomba() {};
 private:
 };
@@ -145,13 +151,29 @@ public:
     Koopa(StudentWorld *p_sw, int startX, int startY);
     virtual void doSomething();
     virtual void bonk();
+    virtual void damage();
     ~Koopa() {};
 private:
 };
 
 //------Projectiles Declaration------//
 
+class Projectiles: public Actor {
+public:
+    Projectiles(StudentWorld *p_sw, int startX, int startY,  int ImageID, int dir);
+    virtual void doSomething();
+    virtual void bonk();
+private:
 
+};
+
+class peachFireball: public Projectiles {
+public:
+    peachFireball(StudentWorld *p_sw, int startX, int startY, int dir);
+    virtual void doSomething();
+    virtual void bonk();
+private:
+};
 
 //------CheckPoints Declaration------//
 

@@ -25,7 +25,7 @@ public:
 
   //extra helper functions -
   void AppendToActors(char type, double x, double y);
-  void bonkAt(double x, double y);
+  bool bonkAt(double x, double y);
   bool canMoveThroughObject(double x,double y);
   bool isIntersecting(double x, double y);
   

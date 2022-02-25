@@ -159,6 +159,8 @@ void StudentWorld::AppendToActors(char type, double x, double y) {
             break;
         case 's':
             actors.push_back(new Star(this, x, y));
+        case 'p':
+            actors.push_back(new peachFireball(this, x, y, getPeach()->getDirection())); //for peach fireball.
         default:
             break;
     }
@@ -186,16 +188,25 @@ Peach* StudentWorld::getPeach() {
     return m_peach;
 }
 
-void StudentWorld::bonkAt(double x, double y) {
+bool StudentWorld::bonkAt(double x, double y) {
     vector<Actor*>::iterator it;
     
     for (it = actors.begin(); it != actors.end(); it++) {
         if ((abs(x - (*it)->getX()) < SPRITE_WIDTH) && abs(y - (*it)->getY()) < SPRITE_HEIGHT) {
             if (!(*it)->canPassThrough()) {
             (*it)->bonk();
+                return true;
             }
+            
+            if ((*it)->isDamageable()) {
+            (*it)->damage();
+                return true;
+            }
+
         }
     }
+    
+    return false;
 }
 
 bool StudentWorld::canMoveThroughObject(double x, double y) {

@@ -27,6 +27,59 @@ StudentWorld* Actor::getWorld() {
     return m_sw;
 }
 
+//-----------Projectiles Implementation ----------//
+
+Projectiles::Projectiles(StudentWorld *p_sw, int startX, int startY,  int ImageID, int dir)
+:Actor(p_sw, ImageID, startX, startY,dir, 0, 1) {};
+
+void Projectiles::doSomething() {};
+
+void Projectiles::bonk() {};
+
+//-----------Peach Fireball Implementation ----------//
+peachFireball::peachFireball(StudentWorld *p_sw, int startX, int startY, int dir)
+:Projectiles(p_sw, startX, startY, IID_PEACH_FIRE, dir) {};
+
+void peachFireball::doSomething() {
+    //if intersects with a damageable element OR a wall then damage.
+    
+    //if either statements are true then fireball MUST DIE!
+    
+    int dir = this->getDirection();
+        
+    if (dir == 0) {
+        if (getWorld()->canMoveThroughObject(getX()+2, getY())) {
+            moveTo(getX() + 2, getY());
+        }
+        
+        else {
+            this->killActor();
+        }
+    }
+    
+    else if (dir == 180) {
+        if (getWorld()->canMoveThroughObject(getX()-2, getY())) {
+        moveTo(getX()-2, getY());
+            
+        }
+        
+        else {
+            this->killActor();
+        }
+    }
+
+    
+    
+    if (this->getWorld()->bonkAt(getX(), getY())) {
+        
+        this->killActor();
+        
+    }
+    
+};
+
+void peachFireball::bonk() {};
+
 //-----------Enemies Implementation ----------//
 
 Enemies::Enemies(StudentWorld *p_sw, int startX, int startY,  int ImageID)
@@ -35,6 +88,8 @@ Enemies::Enemies(StudentWorld *p_sw, int startX, int startY,  int ImageID)
 void Enemies::doSomething() {};
 
 void Enemies::bonk() {};
+
+void Enemies::damage() {};
 
 void Enemies::move() {
     int dir = this->getDirection();
@@ -91,8 +146,10 @@ void Goomba::bonk() {
     getWorld()->playSound(SOUND_PLAYER_KICK);
     this->killActor();
 
-    cout << "goomba is hit" << endl;
 };
+
+void Goomba::damage() {
+}
 
 //-----------Koopa Implementation ----------//
 
@@ -121,10 +178,12 @@ void Koopa::bonk() {
     getWorld()->getPeach()->increasePlayerScore(100);
     getWorld()->playSound(SOUND_PLAYER_KICK);
     this->killActor();
-    
-    cout << "koopa is hit" << endl;
+
 };
 
+void Koopa::damage() {
+    cout << "A Koopa is hit!" << endl;
+};
 
 //-----------Goodies Implementation ----------//
 
@@ -169,7 +228,6 @@ Mushroom::Mushroom(StudentWorld *p_sw, int startX, int startY)
 :Goodies(p_sw, startX, startY, IID_MUSHROOM) {}
 
 void Mushroom::doSomething() {
-    
     //check for intersection
     if (getWorld()->isIntersecting(getX(), getY())) {
         
@@ -367,6 +425,10 @@ void Peach::setTempInvicibility(int num) {
     m_tempInvincibilityTicker = 10;
 }
 
+void Peach::setRechargeTime(int num) {
+    m_time_to_recharge_before_next_fire = 8;
+}
+
 void Peach::doSomething() {
         
     //decrease star power
@@ -374,8 +436,13 @@ void Peach::doSomething() {
         m_starPowerTicker--;
     }
     
+    //decrease temporary invincibility
     if (m_tempInvincibilityTicker > 0) {
         m_tempInvincibilityTicker--;
+    }
+    
+    if (m_time_to_recharge_before_next_fire > 0) {
+        m_time_to_recharge_before_next_fire--;
     }
 
     if (m_jumpDist > 0) {
@@ -422,6 +489,12 @@ void Peach::doSomething() {
         
         break;
     case KEY_PRESS_SPACE:
+            
+        if (m_hasFirePower && m_time_to_recharge_before_next_fire <= 0) {
+            getWorld()->AppendToActors('p', getX(), getY());
+            getWorld()->playSound(SOUND_PLAYER_FIRE);
+        }
+        
         break;
             
     case KEY_PRESS_UP:
@@ -468,6 +541,7 @@ void Peach::doSomething() {
             if ((getWorld()->canMoveThroughObject(currX, currY - SPRITE_HEIGHT/2))) {
                 moveTo(currX, currY - SPRITE_HEIGHT/2);
             }
+            
             break;
         }
     
