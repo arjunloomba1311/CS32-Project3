@@ -36,16 +36,11 @@ void Projectiles::doSomething() {};
 
 void Projectiles::bonk() {};
 
-//-----------Peach Fireball Implementation ----------//
-peachFireball::peachFireball(StudentWorld *p_sw, int startX, int startY, int dir)
-:Projectiles(p_sw, startX, startY, IID_PEACH_FIRE, dir) {};
-
-void peachFireball::doSomething() {
+void Projectiles::move() {
+    
     //if intersects with a damageable element OR a wall then damage.
     
-    //if either statements are true then fireball MUST DIE!
-    
-    //Need to Implement Falling!
+    //if either statements are true then projectile MUST DIE!
     
     int dir = this->getDirection();
         
@@ -70,7 +65,23 @@ void peachFireball::doSomething() {
         }
     }
 
+};
+
+//-----------Peach Fireball Implementation ----------//
+peachFireball::peachFireball(StudentWorld *p_sw, int startX, int startY, int dir)
+:Projectiles(p_sw, startX, startY, IID_PEACH_FIRE, dir) {};
+
+void peachFireball::doSomething() {
     
+    //Need to Implement Falling!
+    
+    this->move();
+
+    //implement falling
+    if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
+        moveTo(getX(), getY() - 2);
+    }
+
     
     if (this->getWorld()->bonkAt(getX(), getY())) {
         
@@ -78,9 +89,20 @@ void peachFireball::doSomething() {
         
     }
     
+
+    
 };
 
 void peachFireball::bonk() {};
+
+//-----------Shell Implementation ----------//
+
+Shell::Shell(StudentWorld* p_sw, int startX, int startY, int dir)
+:Projectiles(p_sw, startX, startY, IID_SHELL, dir){}
+
+void Shell::doSomething() {}
+
+void Shell::bonk() {}
 
 //-----------Enemies Implementation ----------//
 
@@ -91,7 +113,9 @@ void Enemies::doSomething() {};
 
 void Enemies::bonk() {};
 
-void Enemies::damage() {};
+void Enemies::damage() {
+    this->killActor();
+};
 
 void Enemies::move() {
     int dir = this->getDirection();
@@ -149,10 +173,6 @@ void Goomba::bonk() {
     this->killActor();
 
 };
-
-void Goomba::damage() {
-}
-
 //-----------Koopa Implementation ----------//
 
 Koopa::Koopa(StudentWorld *p_sw, int startX, int startY)
@@ -173,18 +193,23 @@ void Koopa::doSomething() {
     }
 };
 
-//for when koopa is hit
+//for when koopa is hit by player with star power
 void Koopa::bonk() {
     
     //same as goomba temporarily until shell isn't made.
     getWorld()->getPeach()->increasePlayerScore(100);
     getWorld()->playSound(SOUND_PLAYER_KICK);
+    
     this->killActor();
 
 };
 
+//when koopa is hit by anything else
 void Koopa::damage() {
-    cout << "A Koopa is hit!" << endl;
+    //create a new shell
+    cout << "here" << endl;
+    this->getWorld()->AppendToActors(getDirection(), 'k', getX(), getY());
+    this->killActor();
 };
 
 //-----------Goodies Implementation ----------//
@@ -326,16 +351,27 @@ void Flag::doSomething() {
 Mario::Mario(StudentWorld *p_sw, int startX, int startY)
 :Checkpoint(p_sw, startX, startY, IID_MARIO) {}
 
-//------------Block Implementation------------//
+//------------Static Object Implementation------------//
 
-Block::Block(StudentWorld *p_sw, int startX, int startY, char power)
-:Actor(p_sw, IID_BLOCK, startX, startY,0, 0, 1.0) //  depth, & size are constant
-{
-    m_power = power;
+staticObj::staticObj(StudentWorld *p_sw, int startX, int startY, int ImageID)
+:Actor(p_sw, ImageID, startX, startY, 0, 0, 1.0) {};
+
+void staticObj::doSomething() {}
+
+bool staticObj::canPassThrough() {
+    return false;
 }
 
-bool Block::canPassThrough() {
-    return false;
+void staticObj::bonk() {}
+
+
+//------------Block Implementation------------//
+
+
+Block::Block(StudentWorld *p_sw, int startX, int startY, char power)
+:staticObj(p_sw, startX, startY, IID_BLOCK) //  depth, & size are constant
+{
+    m_power = power;
 }
 
 char Block::getPower() {
@@ -352,7 +388,7 @@ void Block::bonk() {
     getWorld()->playSound(SOUND_PLAYER_BONK);
     
     if (m_power != 'n') {
-        getWorld()->AppendToActors(m_power, getX(), getY()+SPRITE_HEIGHT);
+        getWorld()->AppendToActors(0, m_power, getX(), getY()+SPRITE_HEIGHT);
         getWorld()->playSound(SOUND_POWERUP_APPEARS);
         this->removePower();
     }
@@ -360,13 +396,13 @@ void Block::bonk() {
 
 //------------Pipe Implementation------------//
 
-Pipe::Pipe(StudentWorld *p_sw, int startX, int startY) :Actor(p_sw, IID_PIPE, startX, startY,0, 0, 1.0) {}
-
-bool Pipe::canPassThrough() {
-    return false;
-}
+Pipe::Pipe(StudentWorld *p_sw, int startX, int startY) :staticObj(p_sw, startX, startY, IID_PIPE) {}
 
 void Pipe::doSomething() {}
+
+void Pipe::bonk() {
+    getWorld()->playSound(SOUND_PLAYER_BONK);
+}
 
 //------------Peach Implementation------------//
 
@@ -482,33 +518,44 @@ void Peach::doSomething() {
             moveTo(currX - (SPRITE_WIDTH/2), currY);
         }
             
+        else {
+            getWorld()->bonkAt(getX() - SPRITE_WIDTH/2, getY());
+
+        }
+            
         break;
     case KEY_PRESS_RIGHT:
         setDirection(0);
         if ((getWorld()->canMoveThroughObject(currX + SPRITE_WIDTH/2, currY))) {
             moveTo(currX + (SPRITE_WIDTH/2), currY);
         }
+            
+        else {
+            getWorld()->bonkAt(getX() + SPRITE_WIDTH/2, getY());
+        }
         
         break;
     case KEY_PRESS_SPACE:
             
         if (m_hasFirePower && m_time_to_recharge_before_next_fire <= 0) {
-            getWorld()->AppendToActors('p', getX(), getY());
+            getWorld()->AppendToActors(0, 'p', getX(), getY());
             getWorld()->playSound(SOUND_PLAYER_FIRE);
+            setRechargeTime(8);
         }
         
         break;
             
     case KEY_PRESS_UP:
             
-            //play jump sound
-            getWorld()->playSound(SOUND_PLAYER_JUMP);
             
             //check if jump is possible
             if (!getWorld()->canMoveThroughObject(currX, currY - SPRITE_HEIGHT/2)) {
                 //check if there's something below
                 
                 //check if jump power is active
+                
+                //play jump sound
+                getWorld()->playSound(SOUND_PLAYER_JUMP);
                 
                 if (m_hasJumpPower) {
                 
@@ -535,6 +582,7 @@ void Peach::doSomething() {
                 }
                 
             }
+            
 
         break;
             
@@ -549,4 +597,3 @@ void Peach::doSomething() {
     
     }
 }
-

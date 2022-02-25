@@ -9,7 +9,7 @@ using namespace std;
 
 GameWorld* createStudentWorld(string assetPath)
 {
-	return new StudentWorld(assetPath);
+    return new StudentWorld(assetPath);
 }
 
 // Students:  Add code to this file, StudentWorld.h, Actor.h, and Actor.cpp
@@ -149,7 +149,7 @@ void StudentWorld::increaseLevel() {
     m_completed_level = true;
 }
 
-void StudentWorld::AppendToActors(char type, double x, double y) {
+void StudentWorld::AppendToActors(int dir, char type, double x, double y) {
     switch(type) {
         case 'm':
             actors.push_back(new Mushroom(this, x, y));
@@ -159,13 +159,20 @@ void StudentWorld::AppendToActors(char type, double x, double y) {
             break;
         case 's':
             actors.push_back(new Star(this, x, y));
+            break;
         case 'p':
             actors.push_back(new peachFireball(this, x, y, getPeach()->getDirection())); //for peach fireball.
+            break;
+        case 'k':
+            cout << "new shell " << endl;
+            actors.push_back(new Shell(this, x, y, dir));
+            break;
         default:
             break;
     }
 }
 
+//check for peach intersecting
 bool StudentWorld::isIntersecting(double x, double y) {
     
     vector<Actor*>::iterator it;
@@ -188,13 +195,14 @@ Peach* StudentWorld::getPeach() {
     return m_peach;
 }
 
+//need to bonk or damage the damageables
 bool StudentWorld::bonkAt(double x, double y) {
     vector<Actor*>::iterator it;
     
     for (it = actors.begin(); it != actors.end(); it++) {
         if ((abs(x - (*it)->getX()) < SPRITE_WIDTH) && abs(y - (*it)->getY()) < SPRITE_HEIGHT) {
             if (!(*it)->canPassThrough()) {
-            (*it)->bonk();
+                (*it)->bonk();
                 return true;
             }
             
@@ -202,13 +210,13 @@ bool StudentWorld::bonkAt(double x, double y) {
             (*it)->damage();
                 return true;
             }
-
         }
     }
     
     return false;
 }
 
+//check if there's a block that's blocking 
 bool StudentWorld::canMoveThroughObject(double x, double y) {
     vector<Actor*>::iterator it;
     
@@ -218,7 +226,7 @@ bool StudentWorld::canMoveThroughObject(double x, double y) {
         if ((abs(x - (*it)->getX()) < SPRITE_WIDTH) && abs(y - (*it)->getY()) < SPRITE_HEIGHT) {
     
             if (!(*it)->canPassThrough()) {
-                return false; 
+                return false;
             }
         }
     }
@@ -227,6 +235,7 @@ bool StudentWorld::canMoveThroughObject(double x, double y) {
 }
 
 void StudentWorld::cleanUp()
+
 {
     
     vector<Actor*>::iterator it;

@@ -70,11 +70,19 @@ private:
 
 //-------Static Objects Declaration-----//
 
-class Block: public Actor {
+class staticObj: public Actor {
+public:
+    staticObj(StudentWorld *p_sw, int startX, int startY, int ImageID);
+    virtual void doSomething();
+    virtual bool canPassThrough();
+    virtual void bonk();
+private:
+};
+
+class Block: public staticObj {
 public:
     Block(StudentWorld* p_sw, int startX, int startY, char power);
     virtual void doSomething();
-    virtual bool canPassThrough();
     virtual void bonk();
     char getPower();
     void removePower();
@@ -82,11 +90,11 @@ private:
     char m_power = 'n';
 };
 
-class Pipe: public Actor {
+class Pipe: public staticObj {
 public:
     Pipe(StudentWorld* psw, int startX, int startY);
     virtual void doSomething();
-    virtual bool canPassThrough();
+    virtual void bonk();
 };
 
 //-------Goodies Declaration-----//
@@ -141,7 +149,6 @@ public:
     Goomba(StudentWorld *p_sw, int startX, int startY);
     virtual void doSomething();
     virtual void bonk();
-    virtual void damage();
     ~Goomba() {};
 private:
 };
@@ -163,6 +170,7 @@ public:
     Projectiles(StudentWorld *p_sw, int startX, int startY,  int ImageID, int dir);
     virtual void doSomething();
     virtual void bonk();
+    virtual void move();
 private:
 
 };
@@ -172,6 +180,15 @@ public:
     peachFireball(StudentWorld *p_sw, int startX, int startY, int dir);
     virtual void doSomething();
     virtual void bonk();
+private:
+};
+
+class Shell: public Projectiles {
+public:
+    Shell(StudentWorld* p_sw, int startX, int startY, int dir);
+    virtual void doSomething();
+    virtual void bonk();
+    
 private:
 };
 
