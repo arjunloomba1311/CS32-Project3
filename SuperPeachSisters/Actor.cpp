@@ -5,7 +5,7 @@
 
 //------------Actor Implementation------------//
 
-Actor::Actor(StudentWorld *p_sw, int ImageID, int startX, int startY, int depth, int size) :GraphObject(ImageID, startX, startY, depth, size), m_sw(p_sw)
+Actor::Actor(StudentWorld *p_sw, int ImageID, int startX, int startY, int dir, int depth, int size) :GraphObject(ImageID, startX, startY, dir, depth, size), m_sw(p_sw)
 {
 };
 
@@ -28,8 +28,9 @@ StudentWorld* Actor::getWorld() {
 }
 
 //-----------Enemies Implementation ----------//
+
 Enemies::Enemies(StudentWorld *p_sw, int startX, int startY,  int ImageID)
-:Actor(p_sw, ImageID, startX, startY, 0, 1) {}
+:Actor(p_sw, ImageID, startX, startY,0, 0, 1) {}
 
 void Enemies::doSomething() {};
 
@@ -38,9 +39,7 @@ void Enemies::bonk() {};
 void Enemies::move() {
     int dir = this->getDirection();
     
-    
-    if (dir >= 0 && dir < 180) {
-        
+    if (dir == 0) {
         
         if (getWorld()->canMoveThroughObject(getX() + SPRITE_WIDTH/2, getY() - 1) || !getWorld()->canMoveThroughObject(getX() + 1, getY())) {
             this->setDirection(180);
@@ -53,7 +52,8 @@ void Enemies::move() {
         }
     }
     
-    else if (dir >= 180 && dir < 360) {
+    else if (dir == 180) {
+        
         if (getWorld()->canMoveThroughObject(getX() - SPRITE_WIDTH/2, getY() - 1) || !getWorld()->canMoveThroughObject(getX() -1 , getY())) {
             this->setDirection(0);
         }
@@ -67,7 +67,6 @@ void Enemies::move() {
     
 };
 
-
 //-----------Goomba Implementation ----------//
 
 Goomba::Goomba(StudentWorld *p_sw, int startX, int startY)
@@ -76,12 +75,24 @@ Goomba::Goomba(StudentWorld *p_sw, int startX, int startY)
 void Goomba::doSomething() {
     this->move();
     if (getWorld()->isIntersecting(getX(), getY())) {
+        
+        if (getWorld()->getPeach()->hasStarPower()) {
+            bonk();
+        } else {
         getWorld()->getPeach()->bonk();
+        }
+        
     }
 };
 
-//for when goomba is hit
-void Goomba::bonk() {};
+//for when goomba is hit SPECIFICALLY BY PEACH!
+void Goomba::bonk() {
+    getWorld()->getPeach()->increasePlayerScore(100);
+    getWorld()->playSound(SOUND_PLAYER_KICK);
+    this->killActor();
+
+    cout << "goomba is hit" << endl;
+};
 
 //-----------Koopa Implementation ----------//
 
@@ -90,27 +101,42 @@ Koopa::Koopa(StudentWorld *p_sw, int startX, int startY)
 
 void Koopa::doSomething() {
     this->move();
-    
     if (getWorld()->isIntersecting(getX(), getY())) {
+        
+        if (getWorld()->getPeach()->hasStarPower()) {
+            bonk();
+        } else {
+            
         getWorld()->getPeach()->bonk();
+            return;
+        }
+        
     }
 };
 
 //for when koopa is hit
-void Koopa::bonk() {};
+void Koopa::bonk() {
+    
+    //same as goomba temporarily until shell isn't made.
+    getWorld()->getPeach()->increasePlayerScore(100);
+    getWorld()->playSound(SOUND_PLAYER_KICK);
+    this->killActor();
+    
+    cout << "koopa is hit" << endl;
+};
 
 
 //-----------Goodies Implementation ----------//
 
 Goodies::Goodies(StudentWorld *p_sw, int startX, int startY, int ImageID)
-:Actor(p_sw, ImageID, startX, startY, 1, 1) // depth, & size are constant
+:Actor(p_sw, ImageID, startX, startY,0, 1, 1) // depth, & size are constant
 
 {}
 
 void Goodies::move() {
     int dir = this->getDirection();
         
-    if (dir >= 0 && dir < 180) {
+    if (dir == 0) {
         if (getWorld()->canMoveThroughObject(getX()+2, getY())) {
             moveTo(getX() + 2, getY());
         }
@@ -118,11 +144,12 @@ void Goodies::move() {
         else {
             
             this->setDirection(180);
+            return;
 
         }
     }
     
-    else if (dir >= 180 && dir < 360) {
+    else if (dir == 180) {
         if (getWorld()->canMoveThroughObject(getX()-2, getY())) {
         moveTo(getX()-2, getY());
             
@@ -131,7 +158,7 @@ void Goodies::move() {
         else {
             
             this->setDirection(0);
-
+            return;
         }
     }
 }
@@ -157,14 +184,12 @@ void Mushroom::doSomething() {
     }
     
     //implement falling
-    else if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
+    if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
         moveTo(getX(), getY() - 2);
     }
     
     //implement moving
-    else {
-        this->move();
-    }
+    this->move();
     
 };
 
@@ -184,13 +209,11 @@ void Flower::doSomething() {
 
     }
     
-    else if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
+    if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
         moveTo(getX(), getY() - 2);
     }
     
-    else {
-        this->move();
-    }
+    this->move();
 }
 
 //-----------Star Implementation ----------//
@@ -220,7 +243,7 @@ void Star::doSomething() {
 
 //-----------Checkpoint Implementation ----------//
 Checkpoint::Checkpoint(StudentWorld *p_sw, int startX, int startY, int ImageID)
-:Actor(p_sw, ImageID, startX, startY, 1, 1) {}
+:Actor(p_sw, ImageID, startX, startY,0, 1, 1) {}
 
 
 //-----------Flag Implementation ----------//
@@ -246,7 +269,7 @@ Mario::Mario(StudentWorld *p_sw, int startX, int startY)
 //------------Block Implementation------------//
 
 Block::Block(StudentWorld *p_sw, int startX, int startY, char power)
-:Actor(p_sw, IID_BLOCK, startX, startY, 0, 1.0) //  depth, & size are constant
+:Actor(p_sw, IID_BLOCK, startX, startY,0, 0, 1.0) //  depth, & size are constant
 {
     m_power = power;
 }
@@ -277,7 +300,7 @@ void Block::bonk() {
 
 //------------Pipe Implementation------------//
 
-Pipe::Pipe(StudentWorld *p_sw, int startX, int startY) :Actor(p_sw, IID_PIPE, startX, startY, 0, 1.0) {}
+Pipe::Pipe(StudentWorld *p_sw, int startX, int startY) :Actor(p_sw, IID_PIPE, startX, startY,0, 0, 1.0) {}
 
 bool Pipe::canPassThrough() {
     return false;
@@ -287,8 +310,16 @@ void Pipe::doSomething() {}
 
 //------------Peach Implementation------------//
 
-Peach::Peach(StudentWorld *p_sw, int startX, int startY) :Actor(p_sw, IID_PEACH, startX, startY, 0, 1.0) {
+Peach::Peach(StudentWorld *p_sw, int startX, int startY) :Actor(p_sw, IID_PEACH, startX, startY,0, 0, 1.0) {
     m_jumpDist = 0; // no mushroom power on initialization
+}
+
+bool Peach::hasStarPower() {
+    if (m_starPowerTicker > 0) {
+        return true;
+    }
+    
+    return false;
 }
 
 void Peach::bonk() {
@@ -321,7 +352,7 @@ void Peach::setFirePower() {
 }
 
 void Peach::setStarPower() {
-    m_starPowerTicker = 150;
+    m_starPowerTicker = 3000;
 }
 
 void Peach::increasePlayerScore(int num) {

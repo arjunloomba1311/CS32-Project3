@@ -11,7 +11,7 @@ class StudentWorld;
 
 class Actor: public GraphObject {
 public:
-    Actor(StudentWorld *p_sw, int imageID, int startX, int startY, int depth, int size);
+    Actor(StudentWorld *p_sw, int imageID, int startX, int startY, int dir, int depth, int size);
     bool getAliveStatus();
     void killActor();
     virtual void doSomething() = 0;
@@ -46,6 +46,9 @@ public:
     void increasePlayerScore(int num);
     void setHitPoints(int num);
     void setTempInvicibility(int num);
+    
+    //output power status
+    bool hasStarPower();
     
     
 private:
@@ -123,6 +126,7 @@ public:
     virtual void doSomething();
     virtual void bonk();
     virtual void move();
+    virtual bool isDamageable(){return true;};
     ~Enemies() {};
 private:
 };
@@ -144,6 +148,10 @@ public:
     ~Koopa() {};
 private:
 };
+
+//------Projectiles Declaration------//
+
+
 
 //------CheckPoints Declaration------//
 
