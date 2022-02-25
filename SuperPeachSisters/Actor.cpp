@@ -64,6 +64,12 @@ void Projectiles::move() {
             this->killActor();
         }
     }
+    
+    //implement falling
+    
+    if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
+        moveTo(getX(), getY() - 2);
+    }
 
 };
 
@@ -76,12 +82,6 @@ void peachFireball::doSomething() {
     //Need to Implement Falling!
     
     this->move();
-
-    //implement falling
-    if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
-        moveTo(getX(), getY() - 2);
-    }
-
     
     if (this->getWorld()->bonkAt(getX(), getY())) {
         
@@ -100,7 +100,10 @@ void peachFireball::bonk() {};
 Shell::Shell(StudentWorld* p_sw, int startX, int startY, int dir)
 :Projectiles(p_sw, startX, startY, IID_SHELL, dir){}
 
-void Shell::doSomething() {}
+void Shell::doSomething() {
+    this->move();
+    //NEED TO FIX!
+}
 
 void Shell::bonk() {}
 
@@ -173,6 +176,7 @@ void Goomba::bonk() {
     this->killActor();
 
 };
+
 //-----------Koopa Implementation ----------//
 
 Koopa::Koopa(StudentWorld *p_sw, int startX, int startY)
@@ -207,7 +211,6 @@ void Koopa::bonk() {
 //when koopa is hit by anything else
 void Koopa::damage() {
     //create a new shell
-    cout << "here" << endl;
     this->getWorld()->AppendToActors(getDirection(), 'k', getX(), getY());
     this->killActor();
 };

@@ -164,7 +164,6 @@ void StudentWorld::AppendToActors(int dir, char type, double x, double y) {
             actors.push_back(new peachFireball(this, x, y, getPeach()->getDirection())); //for peach fireball.
             break;
         case 'k':
-            cout << "new shell " << endl;
             actors.push_back(new Shell(this, x, y, dir));
             break;
         default:
@@ -188,8 +187,6 @@ bool StudentWorld::isIntersecting(double x, double y) {
     return false;
 
 }
-
-
 
 Peach* StudentWorld::getPeach() {
     return m_peach;
