@@ -75,6 +75,7 @@ int StudentWorld::init()
                         actors.push_back(new Block(this, x, y, 's'));
                         break;
                     case Level::piranha:
+                        actors.push_back(new Piranha(this, x, y));
                         break;
                     case Level::mushroom_goodie_block:
                         actors.push_back(new Block(this, x, y, 'm'));
@@ -117,26 +118,29 @@ int StudentWorld::move()
         return GWSTATUS_PLAYER_DIED;
     }
     
-    vector<Actor*>::iterator it;
+    vector<Actor*>::iterator del_it;
+    
+    del_it = actors.begin();
+    
+    while (del_it != actors.end()) {
+        if (!(*del_it)->getAliveStatus()) {
+            delete (*del_it);
+            del_it = actors.erase(del_it);
+        }
         
+        else {
+            del_it++;
+        }
+    }
+    
+    vector<Actor*>::iterator it;
+            
     for (it = actors.begin(); it != actors.end(); it++) {
         if ((*it)->getAliveStatus()) {
             (*it)->doSomething();
         }
     }
     
-    it = actors.begin();
-    
-    while (it != actors.end()) {
-        if (!(*it)->getAliveStatus()) {
-            delete (*it);
-            it = actors.erase(it);
-        }
-        
-        else {
-            it++;
-        }
-    }
     
     if (m_completed_level) {
         return GWSTATUS_FINISHED_LEVEL;
@@ -203,7 +207,7 @@ bool StudentWorld::bonkAt(double x, double y) {
                 return true;
             }
             
-            if ((*it)->isDamageable()) {
+            if ((*it)->isDamageable() && (*it)->getAliveStatus()) {
             (*it)->damage();
                 return true;
             }

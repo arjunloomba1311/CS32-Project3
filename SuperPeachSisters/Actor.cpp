@@ -32,7 +32,17 @@ StudentWorld* Actor::getWorld() {
 Projectiles::Projectiles(StudentWorld *p_sw, int startX, int startY,  int ImageID, int dir)
 :Actor(p_sw, ImageID, startX, startY,dir, 0, 1) {};
 
-void Projectiles::doSomething() {};
+void Projectiles::doSomething() {
+    this->move();
+    
+    if (this->getWorld()->bonkAt(getX()+2, getY())) {
+        
+        
+        this->killActor();
+        
+    }
+
+};
 
 void Projectiles::bonk() {};
 
@@ -77,22 +87,6 @@ void Projectiles::move() {
 peachFireball::peachFireball(StudentWorld *p_sw, int startX, int startY, int dir)
 :Projectiles(p_sw, startX, startY, IID_PEACH_FIRE, dir) {};
 
-void peachFireball::doSomething() {
-    
-    //Need to Implement Falling!
-    
-    this->move();
-    
-    if (this->getWorld()->bonkAt(getX(), getY())) {
-        
-        this->killActor();
-        
-    }
-    
-
-    
-};
-
 void peachFireball::bonk() {};
 
 //-----------Shell Implementation ----------//
@@ -100,10 +94,6 @@ void peachFireball::bonk() {};
 Shell::Shell(StudentWorld* p_sw, int startX, int startY, int dir)
 :Projectiles(p_sw, startX, startY, IID_SHELL, dir){}
 
-void Shell::doSomething() {
-    this->move();
-    //NEED TO FIX!
-}
 
 void Shell::bonk() {}
 
@@ -211,9 +201,67 @@ void Koopa::bonk() {
 //when koopa is hit by anything else
 void Koopa::damage() {
     //create a new shell
-    this->getWorld()->AppendToActors(getDirection(), 'k', getX(), getY());
     this->killActor();
+    this->getWorld()->AppendToActors(getDirection(), 'k', getX(), getY()); // new shell
 };
+
+//-----------Piranha Implementation ----------//
+
+Piranha::Piranha(StudentWorld *p_sw, int startX, int startY)
+:Enemies(p_sw, startX, startY, IID_PIRANHA) {}
+
+void Piranha::doSomething() {
+    
+    this->increaseAnimationNumber(); //as per spec animate the Pirahna.
+    
+    if (getWorld()->isIntersecting(getX(), getY())) {
+        
+        if (getWorld()->getPeach()->hasStarPower()) {
+            bonk();
+        } else {
+            
+        getWorld()->getPeach()->bonk();
+            return;
+        }
+        
+    }
+    
+    if (!(abs(this->getWorld()->getPeach()->getY() - this->getY()) < SPRITE_HEIGHT*1.5)) {
+        return;
+    }
+    
+//    if (this->getWorld()->getPeach()->getDirection() == 0 && this->getDirection() != 180) {
+//        this->setDirection(180); //opposite direction to Peach
+//    }
+//
+//    else if (this->getDirection() != 0) {
+//        this->setDirection(0);
+//    }
+    
+};
+
+void Piranha::setFiringDelay(int num) {
+    m_firingDelay = num;
+}
+
+void Piranha::bonk() {
+    
+    getWorld()->getPeach()->increasePlayerScore(100);
+    getWorld()->playSound(SOUND_PLAYER_KICK);
+    
+    this->killActor();
+    
+};
+
+void Piranha::damage() {};
+
+
+
+
+
+
+
+
 
 //-----------Goodies Implementation ----------//
 

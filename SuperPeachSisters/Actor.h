@@ -163,6 +163,19 @@ public:
 private:
 };
 
+class Piranha: public Enemies {
+public:
+    Piranha(StudentWorld *p_sw, int startX, int startY);
+    virtual void doSomething();
+    virtual void bonk();
+    virtual void damage();
+    void setFiringDelay(int num);
+    ~Piranha() {};
+private:
+    int m_firingDelay = 0;
+    
+};
+
 //------Projectiles Declaration------//
 
 class Projectiles: public Actor {
@@ -178,7 +191,6 @@ private:
 class peachFireball: public Projectiles {
 public:
     peachFireball(StudentWorld *p_sw, int startX, int startY, int dir);
-    virtual void doSomething();
     virtual void bonk();
 private:
 };
@@ -186,7 +198,6 @@ private:
 class Shell: public Projectiles {
 public:
     Shell(StudentWorld* p_sw, int startX, int startY, int dir);
-    virtual void doSomething();
     virtual void bonk();
     
 private:
