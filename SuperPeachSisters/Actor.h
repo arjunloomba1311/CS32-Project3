@@ -51,6 +51,8 @@ public:
     
     //output power status
     bool hasStarPower();
+    bool hasJumpPower() {return m_hasJumpPower;};
+    bool hasShootPower() {return m_hasFirePower;};
     
     
 private:
@@ -200,6 +202,14 @@ public:
     Shell(StudentWorld* p_sw, int startX, int startY, int dir);
     virtual void bonk();
     
+private:
+};
+
+class piranhaFireball: public Projectiles {
+public:
+    piranhaFireball(StudentWorld* p_sw, int startX, int startY, int dir);
+    virtual void doSomething();
+    virtual void bonk();
 private:
 };
 

@@ -101,7 +101,24 @@ int StudentWorld::init()
 
 int StudentWorld::move()
 {
+    
+    stringstream oss;
         
+        oss<<"Lives: "<<getLives()<<" Level: "<<getLevel()<<" Points: "<<getScore();
+        
+        if(m_peach->hasJumpPower()){
+            oss<<" JumpPower!";
+        }
+        if(m_peach->hasJumpPower()){
+            oss<<" ShootPower!";
+        }
+        if(m_peach->hasStarPower()){
+            oss<<" StarPower!";
+        }
+        string s = oss.str();
+        
+        setGameStatText(s);
+            
     if (!getPeach()->getAliveStatus()) {
         decLives();
         

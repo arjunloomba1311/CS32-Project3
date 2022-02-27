@@ -37,7 +37,6 @@ void Projectiles::doSomething() {
     
     if (this->getWorld()->bonkAt(getX()+2, getY())) {
         
-        
         this->killActor();
         
     }
@@ -89,11 +88,28 @@ peachFireball::peachFireball(StudentWorld *p_sw, int startX, int startY, int dir
 
 void peachFireball::bonk() {};
 
+//-----------Piranha Fireball Implementation ----------//
+
+piranhaFireball::piranhaFireball(StudentWorld *p_sw, int startX, int startY, int dir)
+:Projectiles(p_sw, startX, startY, IID_PIRANHA_FIRE, dir) {};
+
+void piranhaFireball::doSomething() {
+    
+    this->move();
+    
+    if (this->getWorld()->isIntersecting(getX()+2, getY())) {
+        this->getWorld()->getPeach()->bonk();
+        this->killActor();
+    }
+    
+};
+
+void piranhaFireball::bonk() {};
+
 //-----------Shell Implementation ----------//
 
 Shell::Shell(StudentWorld* p_sw, int startX, int startY, int dir)
 :Projectiles(p_sw, startX, startY, IID_SHELL, dir){}
-
 
 void Shell::bonk() {}
 
@@ -213,16 +229,24 @@ Piranha::Piranha(StudentWorld *p_sw, int startX, int startY)
 
 void Piranha::doSomething() {
     
+    if (!this->getAliveStatus()) {
+        return;
+    }
+    
     this->increaseAnimationNumber(); //as per spec animate the Pirahna.
     
     if (getWorld()->isIntersecting(getX(), getY())) {
         
         if (getWorld()->getPeach()->hasStarPower()) {
             bonk();
-        } else {
+        }
+        
+        else {
             
         getWorld()->getPeach()->bonk();
-            return;
+            
+        return;
+            
         }
         
     }
@@ -231,13 +255,26 @@ void Piranha::doSomething() {
         return;
     }
     
-//    if (this->getWorld()->getPeach()->getDirection() == 0 && this->getDirection() != 180) {
-//        this->setDirection(180); //opposite direction to Peach
-//    }
-//
-//    else if (this->getDirection() != 0) {
-//        this->setDirection(0);
-//    }
+    if (this->getWorld()->getPeach()->getDirection() == 0) {
+        this->setDirection(180);
+    }
+    
+    else if (this->getWorld()->getPeach()->getDirection() == 180) {
+        this->setDirection(0);
+    }
+    
+    if (m_firingDelay > 0) {
+        m_firingDelay--;
+        return;
+    }
+    
+    if ((abs(this->getWorld()->getPeach()->getX() - this->getX()) < SPRITE_HEIGHT*8)) {
+        getWorld()->addActor(new piranhaFireball(getWorld(), getX(), getY(), this->getDirection()));
+        getWorld()->playSound(SOUND_PIRANHA_FIRE);
+        this->setFiringDelay(40);
+                
+    }
+
     
 };
 
@@ -254,7 +291,9 @@ void Piranha::bonk() {
     
 };
 
-void Piranha::damage() {};
+void Piranha::damage() {
+    this->killActor();
+};
 
 
 
