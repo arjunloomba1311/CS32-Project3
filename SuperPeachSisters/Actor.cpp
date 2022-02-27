@@ -202,7 +202,8 @@ void Koopa::bonk() {
 void Koopa::damage() {
     //create a new shell
     this->killActor();
-    this->getWorld()->AppendToActors(getDirection(), 'k', getX(), getY()); // new shell
+    getWorld()->addActor(new Shell(getWorld(),getX(),getY(),getDirection()));
+
 };
 
 //-----------Piranha Implementation ----------//
@@ -439,8 +440,21 @@ void Block::bonk() {
     getWorld()->playSound(SOUND_PLAYER_BONK);
     
     if (m_power != 'n') {
-        getWorld()->AppendToActors(0, m_power, getX(), getY()+SPRITE_HEIGHT);
+        
+        if (m_power == 'm') {
+            getWorld()->addActor(new Mushroom(getWorld(), getX(), getY() + SPRITE_HEIGHT));
+        }
+        
+        if (m_power == 's') {
+            getWorld()->addActor(new Star(getWorld(), getX(), getY() + SPRITE_HEIGHT));
+        }
+        
+        if (m_power == 'f') {
+            getWorld()->addActor(new Flower(getWorld(), getX(), getY() + SPRITE_HEIGHT));
+        }
+        
         getWorld()->playSound(SOUND_POWERUP_APPEARS);
+        
         this->removePower();
     }
 }
@@ -499,7 +513,7 @@ void Peach::setFirePower() {
 }
 
 void Peach::setStarPower() {
-    m_starPowerTicker = 3000;
+    m_starPowerTicker = 150;
 }
 
 void Peach::increasePlayerScore(int num) {
@@ -589,7 +603,7 @@ void Peach::doSomething() {
     case KEY_PRESS_SPACE:
             
         if (m_hasFirePower && m_time_to_recharge_before_next_fire <= 0) {
-            getWorld()->AppendToActors(0, 'p', getX(), getY());
+            getWorld()->addActor(new peachFireball(getWorld(), getX(), getY(),getDirection()));
             getWorld()->playSound(SOUND_PLAYER_FIRE);
             setRechargeTime(8);
         }

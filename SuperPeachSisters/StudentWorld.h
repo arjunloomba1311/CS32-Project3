@@ -24,7 +24,7 @@ public:
   void increaseLevel();
 
   //extra helper functions -
-  void AppendToActors(int dir, char type, double x, double y);
+  void addActor(Actor *newActor);
   bool bonkAt(double x, double y);
   bool canMoveThroughObject(double x,double y);
   bool isIntersecting(double x, double y);

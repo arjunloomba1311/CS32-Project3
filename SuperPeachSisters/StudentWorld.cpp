@@ -153,28 +153,6 @@ void StudentWorld::increaseLevel() {
     m_completed_level = true;
 }
 
-void StudentWorld::AppendToActors(int dir, char type, double x, double y) {
-    switch(type) {
-        case 'm':
-            actors.push_back(new Mushroom(this, x, y));
-            break;
-        case 'f':
-            actors.push_back(new Flower(this, x, y));
-            break;
-        case 's':
-            actors.push_back(new Star(this, x, y));
-            break;
-        case 'p':
-            actors.push_back(new peachFireball(this, x, y, getPeach()->getDirection())); //for peach fireball.
-            break;
-        case 'k':
-            actors.push_back(new Shell(this, x, y, dir));
-            break;
-        default:
-            break;
-    }
-}
-
 //check for peach intersecting
 bool StudentWorld::isIntersecting(double x, double y) {
     
@@ -247,6 +225,11 @@ void StudentWorld::cleanUp()
     actors.clear();
     
     }
+
+void StudentWorld::addActor(Actor *newActor) {
+    actors.push_back(newActor);
+}
+
 
 StudentWorld::~StudentWorld() {
     cleanUp();
