@@ -215,7 +215,6 @@ bool StudentWorld::isIntersecting(double x, double y) {
         return true;
     }
     
-    
     return false;
 
 }
@@ -225,6 +224,7 @@ Peach* StudentWorld::getPeach() {
 }
 
 //need to bonk or damage the damageables
+
 bool StudentWorld::bonkAt(double x, double y) {
     vector<Actor*>::iterator it;
     
@@ -234,11 +234,28 @@ bool StudentWorld::bonkAt(double x, double y) {
                 (*it)->bonk();
                 return true;
             }
-            
         }
     }
     
     return false;
+}
+
+bool StudentWorld::canMove(double x, double y) {
+    vector<Actor*>::iterator it;
+    
+    //check if a block is blocking ahead then should not pass it.
+    for (it = actors.begin(); it != actors.end(); it++) {
+        
+        if ((abs(x - (*it)->getX()) < SPRITE_WIDTH) && abs(y - (*it)->getY()) < SPRITE_HEIGHT) {
+    
+            if (!(*it)->canPassThrough()) {
+                return false;
+            }
+        }
+    }
+    
+    return true;
+    
 }
 
 void StudentWorld::wonGame() {
@@ -262,24 +279,8 @@ bool StudentWorld::damageAt(double x, double y) {
 
 }
 
-//check if there's a block that's blocking 
-bool StudentWorld::canMoveThroughObject(double x, double y) {
-    vector<Actor*>::iterator it;
-    
-    //check if a block is blocking ahead then should not pass it.
-    for (it = actors.begin(); it != actors.end(); it++) {
-        
-        if ((abs(x - (*it)->getX()) < SPRITE_WIDTH) && abs(y - (*it)->getY()) < SPRITE_HEIGHT) {
-    
-            if (!(*it)->canPassThrough()) {
-                return false;
-            }
-        }
-    }
-    
-    return true;
-    
-}
+//check if there's a block that's blocking
+
 
 void StudentWorld::cleanUp()
 
@@ -297,7 +298,6 @@ void StudentWorld::cleanUp()
 void StudentWorld::addActor(Actor *newActor) {
     actors.push_back(newActor);
 }
-
 
 StudentWorld::~StudentWorld() {
     cleanUp();

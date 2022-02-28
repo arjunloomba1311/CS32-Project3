@@ -22,6 +22,12 @@ bool Actor::canPassThrough() {
     return true;
 }
 
+void Actor::falling(double x, double y) {
+    if (getWorld()->canMove(x, y)) {
+        moveTo(x, y);
+    }
+}
+
 //return the student world pointer
 StudentWorld* Actor::getWorld() {
     return m_sw;
@@ -50,21 +56,25 @@ void Projectiles::move() {
     //if intersects with a damageable element OR a wall then damage.
     
     //if either statements are true then projectile MUST DIE!
-    
+        
+    this->falling(getX(), getY() - 2);
+
     int dir = this->getDirection();
         
     if (dir == 0) {
-        if (getWorld()->canMoveThroughObject(getX()+2, getY())) {
+        if (getWorld()->canMove(getX()+2, getY())) {
             moveTo(getX() + 2, getY());
         }
         
         else {
+            
             this->killActor();
+            
         }
     }
     
     else if (dir == 180) {
-        if (getWorld()->canMoveThroughObject(getX()-2, getY())) {
+        if (getWorld()->canMove(getX()-2, getY())) {
         moveTo(getX()-2, getY());
             
         }
@@ -73,16 +83,10 @@ void Projectiles::move() {
             this->killActor();
         }
     }
-    
-    //implement falling
-    
-    if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
-        moveTo(getX(), getY() - 2);
-    }
-
 };
 
 //-----------Peach Fireball Implementation ----------//
+
 peachFireball::peachFireball(StudentWorld *p_sw, int startX, int startY, int dir)
 :Projectiles(p_sw, startX, startY, IID_PEACH_FIRE, dir) {};
 
@@ -116,7 +120,7 @@ void Shell::bonk() {}
 //-----------Enemies Implementation ----------//
 
 Enemies::Enemies(StudentWorld *p_sw, int startX, int startY,  int ImageID)
-:Actor(p_sw, ImageID, startX, startY,0, 0, 1) {}
+:Actor(p_sw, ImageID, startX, startY,0, 1, 1) {}
 
 void Enemies::doSomething() {};
 
@@ -127,11 +131,12 @@ void Enemies::damage() {
 };
 
 void Enemies::move() {
+    
     int dir = this->getDirection();
     
     if (dir == 0) {
         
-        if (getWorld()->canMoveThroughObject(getX() + SPRITE_WIDTH/2, getY() - 1) || !getWorld()->canMoveThroughObject(getX() + 1, getY())) {
+        if (getWorld()->canMove(getX() + SPRITE_WIDTH, getY() - 1) || !getWorld()->canMove(getX() + 1, getY())) {
             this->setDirection(180);
         }
         
@@ -144,7 +149,7 @@ void Enemies::move() {
     
     else if (dir == 180) {
         
-        if (getWorld()->canMoveThroughObject(getX() - SPRITE_WIDTH/2, getY() - 1) || !getWorld()->canMoveThroughObject(getX() -1 , getY())) {
+        if (getWorld()->canMove(getX() - SPRITE_WIDTH, getY() - 1) || !getWorld()->canMove(getX() -1 , getY())) {
             this->setDirection(0);
         }
         
@@ -176,6 +181,7 @@ void Goomba::doSomething() {
 };
 
 //for when goomba is hit SPECIFICALLY BY PEACH!
+
 void Goomba::bonk() {
     getWorld()->increaseScore(100);
     getWorld()->playSound(SOUND_PLAYER_KICK);
@@ -307,10 +313,15 @@ Goodies::Goodies(StudentWorld *p_sw, int startX, int startY, int ImageID)
 {}
 
 void Goodies::move() {
+    
+    //implement falling
+    
+    this->falling(getX(), getY() - 2);
+
     int dir = this->getDirection();
         
     if (dir == 0) {
-        if (getWorld()->canMoveThroughObject(getX()+2, getY())) {
+        if (getWorld()->canMove(getX()+2, getY())) {
             moveTo(getX() + 2, getY());
         }
         
@@ -323,7 +334,7 @@ void Goodies::move() {
     }
     
     else if (dir == 180) {
-        if (getWorld()->canMoveThroughObject(getX()-2, getY())) {
+        if (getWorld()->canMove(getX()-2, getY())) {
         moveTo(getX()-2, getY());
             
         }
@@ -355,14 +366,10 @@ void Mushroom::doSomething() {
         return;
     }
     
-    //implement falling
-    if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
-        moveTo(getX(), getY() - 2);
-    }
     
     //implement moving
     this->move();
-    
+
 };
 
 //-----------Flower Implementation ----------//
@@ -379,13 +386,12 @@ void Flower::doSomething() {
         this->killActor();
         
         getWorld()->playSound(SOUND_PLAYER_POWERUP);
+        
+        return;
 
     }
-    
-    if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
-        moveTo(getX(), getY() - 2);
-    }
-    
+ 
+
     this->move();
 }
 
@@ -403,16 +409,15 @@ void Star::doSomething() {
         this->killActor();
         
         getWorld()->playSound(SOUND_PLAYER_POWERUP);
+        
+        return;
 
     }
     
-    else if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
-        moveTo(getX(), getY() - 2);
-    }
-    
-    else {
-        this->move();
-    }
+
+
+    this->move();
+
 }
 
 //-----------Checkpoint Implementation ----------//
@@ -443,7 +448,6 @@ Mario::Mario(StudentWorld *p_sw, int startX, int startY)
 void Mario::doSomething() {
     if (this->getWorld()->isIntersecting(this->getX(), this->getY())) {
         this->getWorld()->increaseScore(1000);
-//        this->getWorld()->playSound(SOUND_GAME_OVER);
         this->getWorld()->wonGame();
         this->killActor();
     }
@@ -462,7 +466,6 @@ bool staticObj::canPassThrough() {
 
 void staticObj::bonk() {}
 
-
 //------------Block Implementation------------//
 
 
@@ -470,10 +473,6 @@ Block::Block(StudentWorld *p_sw, int startX, int startY, char power)
 :staticObj(p_sw, startX, startY, IID_BLOCK) //  depth, & size are constant
 {
     m_power = power;
-}
-
-char Block::getPower() {
-    return m_power;
 }
 
 void Block::removePower() {
@@ -568,7 +567,6 @@ void Peach::setStarPower() {
     m_starPowerTicker = 150;
 }
 
-
 void Peach::setHitPoints(int num) {
     m_hitPoints = num;
 }
@@ -593,13 +591,15 @@ void Peach::doSomething() {
         m_tempInvincibilityTicker--;
     }
     
+    //recharge before next fire
     if (m_time_to_recharge_before_next_fire > 0) {
         m_time_to_recharge_before_next_fire--;
     }
 
+    
     if (m_jumpDist > 0) {
         
-        if ((getWorld()->canMoveThroughObject(getX(), getY() + SPRITE_HEIGHT/2))) {
+        if ((getWorld()->canMove(getX(), getY() + SPRITE_HEIGHT/2))) {
             moveTo(getX(), getY() + SPRITE_HEIGHT/2);
             m_jumpDist -= 1; //reduce jump dist by 1
         }
@@ -612,10 +612,9 @@ void Peach::doSomething() {
     } else if (m_jumpDist <= 0) {
         
         //check to see if falling
-        if (getWorld()->canMoveThroughObject(getX(), getY() - SPRITE_HEIGHT/2)) {
-            moveTo(getX(), getY() - SPRITE_HEIGHT/2);
-        }
         
+        this->falling(getX(), getY() - SPRITE_HEIGHT/2);
+            
     }
     
     int ch;
@@ -625,10 +624,11 @@ void Peach::doSomething() {
         double currY = getY();
         switch (ch)
     {
+            
     case KEY_PRESS_LEFT:
         
         setDirection(180); //set direction to 180 degrees
-        if ((getWorld()->canMoveThroughObject(currX - SPRITE_WIDTH/2, currY))) {
+        if ((getWorld()->canMove(currX - SPRITE_WIDTH/2, currY))) {
             moveTo(currX - (SPRITE_WIDTH/2), currY);
         }
             
@@ -640,7 +640,7 @@ void Peach::doSomething() {
         break;
     case KEY_PRESS_RIGHT:
         setDirection(0);
-        if ((getWorld()->canMoveThroughObject(currX + SPRITE_WIDTH/2, currY))) {
+        if ((getWorld()->canMove(currX + SPRITE_WIDTH/2, currY))) {
             moveTo(currX + (SPRITE_WIDTH/2), currY);
         }
             
@@ -663,7 +663,7 @@ void Peach::doSomething() {
             
             
             //check if jump is possible
-            if (!getWorld()->canMoveThroughObject(currX, currY - SPRITE_HEIGHT/2)) {
+            if (!getWorld()->canMove(currX, currY - SPRITE_HEIGHT/2)) {
                 //check if there's something below
                 
                 //check if jump power is active
@@ -681,7 +681,7 @@ void Peach::doSomething() {
                     m_jumpDist = 8;
                 }
                
-                if ((getWorld()->canMoveThroughObject(currX, currY + SPRITE_HEIGHT/2))) {
+                if ((getWorld()->canMove(currX, currY + SPRITE_HEIGHT/2))) {
                     moveTo(currX, currY + SPRITE_HEIGHT/2);
                     m_jumpDist -= 1; //reduce jump dist by 1
                 }
@@ -701,10 +701,6 @@ void Peach::doSomething() {
         break;
             
     case KEY_PRESS_DOWN:
-            
-            if ((getWorld()->canMoveThroughObject(currX, currY - SPRITE_HEIGHT/2))) {
-                moveTo(currX, currY - SPRITE_HEIGHT/2);
-            }
             
             break;
         }

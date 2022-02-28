@@ -19,7 +19,7 @@ public:
     virtual bool canPassThrough(); //i.e. can the actor pass through the object or not.
     virtual void bonk() {};
     virtual void damage() {};
-    
+    virtual void falling(double x, double y);
     virtual bool isPlayer() {return false;};
     virtual bool isDamageable() {return false;};
     
@@ -84,7 +84,6 @@ public:
     Block(StudentWorld* p_sw, int startX, int startY, char power);
     virtual void doSomething();
     virtual void bonk();
-    char getPower();
     void removePower();
 private:
     char m_power = 'n';
@@ -223,14 +222,14 @@ class Flag: public Checkpoint {
 public:
     Flag(StudentWorld *p_sw, int startX, int startY);
     virtual void doSomething();
-}; 
+};
 
 class Mario: public Checkpoint {
 public:
     Mario(StudentWorld *p_sw, int startX, int startY);
     virtual void doSomething();
 private:
-}; 
+};
 
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 
