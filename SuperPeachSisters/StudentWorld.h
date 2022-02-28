@@ -16,27 +16,29 @@ class Peach;
 class StudentWorld : public GameWorld
 {
 public:
-  StudentWorld(std::string assetPath);
-  virtual int init();
-  virtual int move();
-  virtual void cleanUp();
-  Peach* getPeach();
-  void increaseLevel();
-
-  //extra helper functions -
-  void addActor(Actor *newActor);
-  bool bonkAt(double x, double y);
-  bool canMoveThroughObject(double x,double y);
-  bool isIntersecting(double x, double y);
-  
-  
-~StudentWorld();
-
+    StudentWorld(std::string assetPath);
+    virtual int init();
+    virtual int move();
+    virtual void cleanUp();
+    Peach* getPeach();
+    void increaseLevel();
+    void wonGame();
+    
+    //extra helper functions -
+    void addActor(Actor *newActor);
+    bool bonkAt(double x, double y);
+    bool damageAt(double x, double y);
+    bool canMoveThroughObject(double x,double y);
+    bool isIntersecting(double x, double y);
+    
+    ~StudentWorld();
+    
 private:
     vector<Actor*> actors;
     Peach* m_peach;
     bool m_hasGoody = false;
     bool m_completed_level = false;
+    bool m_wonGame = false;
 };
 
 #endif // STUDENTWORLD_H_

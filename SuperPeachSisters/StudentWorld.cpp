@@ -22,6 +22,8 @@ StudentWorld::StudentWorld(string assetPath)
 int StudentWorld::init()
 {
     
+    m_wonGame = false;
+    
     //set completed level to false
     m_completed_level = false;
     
@@ -102,28 +104,53 @@ int StudentWorld::init()
 int StudentWorld::move()
 {
     
-    stringstream oss;
+        stringstream oss;
+    
+        oss.fill('0');
+
+        oss << "Lives: " << this->getLives() << " Level: " << setw(2) << this->getLevel() << " Points: ";
         
-        oss<<"Lives: "<<getLives()<<" Level: "<<getLevel()<<" Points: "<<getScore();
-        
-        if(m_peach->hasJumpPower()){
-            oss<<" JumpPower!";
-        }
-        if(m_peach->hasJumpPower()){
-            oss<<" ShootPower!";
-        }
-        if(m_peach->hasStarPower()){
+        oss.fill('0');
+    
+        oss << setw(6) << this->getScore();
+                
+        if (m_peach->hasStarPower()) {
+            
             oss<<" StarPower!";
         }
+    
+        if (m_peach->hasFirePower()) {
+            oss<<" ShootPower!";
+        }
+    
+        if (m_peach->hasJumpPower()) {
+            
+            oss<<" JumpPower!";
+            
+        }
+    
         string s = oss.str();
         
         setGameStatText(s);
-            
+    
+        
+    //check if won the game
+    if (m_wonGame) {
+        
+        playSound(SOUND_GAME_OVER);
+        
+        return GWSTATUS_PLAYER_WON;
+    }
+    
+    //is the peach alive
     if (!getPeach()->getAliveStatus()) {
+        
         decLives();
         
         if (getLives() <= 0) {
+            
             playSound(SOUND_GAME_OVER);
+            
         }
         
         else {
@@ -135,11 +162,22 @@ int StudentWorld::move()
         return GWSTATUS_PLAYER_DIED;
     }
     
+
+    
+    if (m_completed_level) {
+        
+        return GWSTATUS_FINISHED_LEVEL;
+        
+    }
+    
+    //delete all dead actors
+    
     vector<Actor*>::iterator del_it;
     
     del_it = actors.begin();
     
     while (del_it != actors.end()) {
+        
         if (!(*del_it)->getAliveStatus()) {
             delete (*del_it);
             del_it = actors.erase(del_it);
@@ -159,29 +197,24 @@ int StudentWorld::move()
     }
     
     
-    if (m_completed_level) {
-        return GWSTATUS_FINISHED_LEVEL;
-    }
     
     return GWSTATUS_CONTINUE_GAME; //need to change to GWSTATUS DIED eventually//
 }
 
 void StudentWorld::increaseLevel() {
+    
     m_completed_level = true;
+    
 }
 
 //check for peach intersecting
 bool StudentWorld::isIntersecting(double x, double y) {
-    
-    vector<Actor*>::iterator it;
-    
-    for (it = actors.begin(); it != actors.end(); it++) {
-        if ((abs(x - (*it)->getX()) < SPRITE_WIDTH/2) && abs(y - (*it)->getY()) < SPRITE_HEIGHT/2) {
-            if ((*it)->isPlayer()) { //check if it's intersecting with peach or not.
-                return true;
-            }
-        }
+        
+    if ((abs(x - m_peach->getX()) < SPRITE_WIDTH/2)  && (abs(y - m_peach->getY()) < SPRITE_WIDTH/2)) {
+        
+        return true;
     }
+    
     
     return false;
 
@@ -202,6 +235,22 @@ bool StudentWorld::bonkAt(double x, double y) {
                 return true;
             }
             
+        }
+    }
+    
+    return false;
+}
+
+void StudentWorld::wonGame() {
+    m_wonGame = true;
+}
+
+bool StudentWorld::damageAt(double x, double y) {
+    vector<Actor*>::iterator it;
+    
+    for (it = actors.begin(); it != actors.end(); it++) {
+        if ((abs(x - (*it)->getX()) < SPRITE_WIDTH) && abs(y - (*it)->getY()) < SPRITE_HEIGHT) {
+            
             if ((*it)->isDamageable() && (*it)->getAliveStatus()) {
             (*it)->damage();
                 return true;
@@ -210,6 +259,7 @@ bool StudentWorld::bonkAt(double x, double y) {
     }
     
     return false;
+
 }
 
 //check if there's a block that's blocking 
@@ -228,6 +278,7 @@ bool StudentWorld::canMoveThroughObject(double x, double y) {
     }
     
     return true;
+    
 }
 
 void StudentWorld::cleanUp()

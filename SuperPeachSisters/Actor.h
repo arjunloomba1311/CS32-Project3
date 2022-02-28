@@ -22,7 +22,6 @@ public:
     
     virtual bool isPlayer() {return false;};
     virtual bool isDamageable() {return false;};
-
     
 private:
     bool m_isalive = true; //true is for alive and false is for dead.
@@ -44,29 +43,28 @@ public:
     void setStarPower();
     
     //change other attributes
-    void increasePlayerScore(int num);
     void setHitPoints(int num);
     void setTempInvicibility(int num);
     void setRechargeTime(int num);
     
     //output power status
     bool hasStarPower();
-    bool hasJumpPower() {return m_hasJumpPower;};
-    bool hasShootPower() {return m_hasFirePower;};
-    
+    bool hasJumpPower();
+    bool hasFirePower();
     
 private:
+    
+    //check for attributes
     int m_hitPoints = 1;
     int m_tempInvincibilityTicker = 0;
-    int m_starPowerTicker = 0;
     int m_time_to_recharge_before_next_fire = 0;
 
+    //check for powers
+    int m_starPowerTicker = 0;
     bool m_hasFirePower = false;
     bool m_hasJumpPower = false;
-    
-    int m_score = 0;
-    
-    int m_jumpDist;
+        
+    int m_jumpDist = 0;
 
 };
 
@@ -230,7 +228,7 @@ public:
 class Mario: public Checkpoint {
 public:
     Mario(StudentWorld *p_sw, int startX, int startY);
-    virtual void doSomething() {};
+    virtual void doSomething();
 private:
 }; 
 

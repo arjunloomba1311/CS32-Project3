@@ -35,7 +35,7 @@ Projectiles::Projectiles(StudentWorld *p_sw, int startX, int startY,  int ImageI
 void Projectiles::doSomething() {
     this->move();
     
-    if (this->getWorld()->bonkAt(getX()+2, getY())) {
+    if (this->getWorld()->damageAt(getX()+2, getY())) {
         
         this->killActor();
         
@@ -177,7 +177,7 @@ void Goomba::doSomething() {
 
 //for when goomba is hit SPECIFICALLY BY PEACH!
 void Goomba::bonk() {
-    getWorld()->getPeach()->increasePlayerScore(100);
+    getWorld()->increaseScore(100);
     getWorld()->playSound(SOUND_PLAYER_KICK);
     this->killActor();
 
@@ -207,7 +207,7 @@ void Koopa::doSomething() {
 void Koopa::bonk() {
     
     //same as goomba temporarily until shell isn't made.
-    getWorld()->getPeach()->increasePlayerScore(100);
+    getWorld()->increaseScore(100);
     getWorld()->playSound(SOUND_PLAYER_KICK);
     
     this->killActor();
@@ -217,6 +217,7 @@ void Koopa::bonk() {
 //when koopa is hit by anything else
 void Koopa::damage() {
     //create a new shell
+    getWorld()->increaseScore(100);
     this->killActor();
     getWorld()->addActor(new Shell(getWorld(),getX(),getY(),getDirection()));
 
@@ -255,20 +256,21 @@ void Piranha::doSomething() {
         return;
     }
     
-    if (this->getWorld()->getPeach()->getDirection() == 0) {
+    //check if peach is leftward or rightward to the piranha
+    if (this->getWorld()->getPeach()->getX() < this->getX()) {
         this->setDirection(180);
     }
     
-    else if (this->getWorld()->getPeach()->getDirection() == 180) {
+    else {
         this->setDirection(0);
     }
-    
+        
     if (m_firingDelay > 0) {
         m_firingDelay--;
         return;
     }
     
-    if ((abs(this->getWorld()->getPeach()->getX() - this->getX()) < SPRITE_HEIGHT*8)) {
+    if ((abs(this->getWorld()->getPeach()->getX() - this->getX()) < SPRITE_WIDTH*8)) {
         getWorld()->addActor(new piranhaFireball(getWorld(), getX(), getY(), this->getDirection()));
         getWorld()->playSound(SOUND_PIRANHA_FIRE);
         this->setFiringDelay(40);
@@ -284,7 +286,7 @@ void Piranha::setFiringDelay(int num) {
 
 void Piranha::bonk() {
     
-    getWorld()->getPeach()->increasePlayerScore(100);
+    getWorld()->increaseScore(100);
     getWorld()->playSound(SOUND_PLAYER_KICK);
     
     this->killActor();
@@ -292,15 +294,9 @@ void Piranha::bonk() {
 };
 
 void Piranha::damage() {
+    getWorld()->increaseScore(100);
     this->killActor();
 };
-
-
-
-
-
-
-
 
 
 //-----------Goodies Implementation ----------//
@@ -349,7 +345,7 @@ void Mushroom::doSomething() {
     //check for intersection
     if (getWorld()->isIntersecting(getX(), getY())) {
         
-        getWorld()->getPeach()->increasePlayerScore(75);
+        getWorld()->increaseScore(75);
         getWorld()->getPeach()->setHitPoints(2);
         getWorld()->getPeach()->setJumpPower();
         this->killActor();
@@ -376,7 +372,8 @@ Flower::Flower(StudentWorld *p_sw, int startX, int startY) :Goodies(p_sw, startX
 void Flower::doSomething() {
     
     if (getWorld()->isIntersecting(getX(), getY())) {
-        getWorld()->getPeach()->increasePlayerScore(50);
+        
+        getWorld()->increaseScore(50);
         getWorld()->getPeach()->setHitPoints(2);
         getWorld()->getPeach()->setFirePower();
         this->killActor();
@@ -399,7 +396,8 @@ Star::Star(StudentWorld *p_sw, int startX, int startY) :Goodies(p_sw, startX, st
 void Star::doSomething() {
     
     if (getWorld()->isIntersecting(getX(), getY())) {
-        getWorld()->getPeach()->increasePlayerScore(100);
+        
+        getWorld()->increaseScore(100);
         getWorld()->getPeach()->setHitPoints(2);
         getWorld()->getPeach()->setStarPower();
         this->killActor();
@@ -429,8 +427,8 @@ Flag::Flag(StudentWorld *p_sw, int startX, int startY)
 void Flag::doSomething() {
     if (getWorld()->isIntersecting(getX(), getY())) {
         getWorld()->playSound(SOUND_FINISHED_LEVEL);
-        getWorld()->getPeach()->increasePlayerScore(1000);
         
+        getWorld()->increaseScore(1000);
         getWorld()->increaseLevel();
 
         this->killActor();
@@ -441,6 +439,15 @@ void Flag::doSomething() {
 
 Mario::Mario(StudentWorld *p_sw, int startX, int startY)
 :Checkpoint(p_sw, startX, startY, IID_MARIO) {}
+
+void Mario::doSomething() {
+    if (this->getWorld()->isIntersecting(this->getX(), this->getY())) {
+        this->getWorld()->increaseScore(1000);
+//        this->getWorld()->playSound(SOUND_GAME_OVER);
+        this->getWorld()->wonGame();
+        this->killActor();
+    }
+}
 
 //------------Static Object Implementation------------//
 
@@ -510,9 +517,7 @@ void Pipe::bonk() {
 
 //------------Peach Implementation------------//
 
-Peach::Peach(StudentWorld *p_sw, int startX, int startY) :Actor(p_sw, IID_PEACH, startX, startY,0, 0, 1.0) {
-    m_jumpDist = 0; // no mushroom power on initialization
-}
+Peach::Peach(StudentWorld *p_sw, int startX, int startY) :Actor(p_sw, IID_PEACH, startX, startY,0, 0, 1.0) {}
 
 bool Peach::hasStarPower() {
     if (m_starPowerTicker > 0) {
@@ -520,6 +525,14 @@ bool Peach::hasStarPower() {
     }
     
     return false;
+}
+
+bool Peach::hasJumpPower() {
+    return m_hasJumpPower;
+}
+
+bool Peach::hasFirePower() {
+    return m_hasFirePower;
 }
 
 void Peach::bonk() {
@@ -555,9 +568,6 @@ void Peach::setStarPower() {
     m_starPowerTicker = 150;
 }
 
-void Peach::increasePlayerScore(int num) {
-    m_score += num;
-}
 
 void Peach::setHitPoints(int num) {
     m_hitPoints = num;
