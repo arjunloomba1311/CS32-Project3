@@ -22,6 +22,7 @@ StudentWorld::StudentWorld(string assetPath)
 int StudentWorld::init()
 {
     
+    //set won game to false
     m_wonGame = false;
     
     //set completed level to false
@@ -210,7 +211,7 @@ void StudentWorld::increaseLevel() {
 //check for peach intersecting
 bool StudentWorld::isIntersecting(double x, double y) {
         
-    if ((abs(x - m_peach->getX()) < SPRITE_WIDTH/2)  && (abs(y - m_peach->getY()) < SPRITE_WIDTH/2)) {
+    if ((abs(x - m_peach->getX()) < SPRITE_WIDTH)  && (abs(y - m_peach->getY()) < SPRITE_HEIGHT)) {
         
         return true;
     }
