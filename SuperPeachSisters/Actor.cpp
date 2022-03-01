@@ -39,25 +39,29 @@ Projectiles::Projectiles(StudentWorld *p_sw, int startX, int startY,  int ImageI
 :Actor(p_sw, ImageID, startX, startY,dir, 0, 1) {};
 
 void Projectiles::doSomething() {
-    this->move();
     
+    //check if it overlaps with a damageable object or not
     if (this->getWorld()->damageAt(getX()+2, getY())) {
         
         this->killActor();
         
+        return;
+        
     }
+    
+    //otherwise fall/ move
+    this->move();
+    
 
 };
-
-void Projectiles::bonk() {};
 
 void Projectiles::move() {
     
     //if intersects with a damageable element OR a wall then damage.
     
     //if either statements are true then projectile MUST DIE!
-        
     this->falling(getX(), getY() - 2);
+
 
     int dir = this->getDirection();
         
@@ -83,14 +87,14 @@ void Projectiles::move() {
             this->killActor();
         }
     }
+    
+
 };
 
 //-----------Peach Fireball Implementation ----------//
 
 peachFireball::peachFireball(StudentWorld *p_sw, int startX, int startY, int dir)
 :Projectiles(p_sw, startX, startY, IID_PEACH_FIRE, dir) {};
-
-void peachFireball::bonk() {};
 
 //-----------Piranha Fireball Implementation ----------//
 
@@ -99,34 +103,37 @@ piranhaFireball::piranhaFireball(StudentWorld *p_sw, int startX, int startY, int
 
 void piranhaFireball::doSomething() {
     
-    this->move();
     
     if (this->getWorld()->isIntersecting(getX()+2, getY())) {
         this->getWorld()->getPeach()->bonk();
         this->killActor();
     }
     
+    this->move();
+
 };
 
-void piranhaFireball::bonk() {};
 
 //-----------Shell Implementation ----------//
 
 Shell::Shell(StudentWorld* p_sw, int startX, int startY, int dir)
 :Projectiles(p_sw, startX, startY, IID_SHELL, dir){}
 
-void Shell::bonk() {}
 
 //-----------Enemies Implementation ----------//
 
 Enemies::Enemies(StudentWorld *p_sw, int startX, int startY,  int ImageID)
 :Actor(p_sw, ImageID, startX, startY,0, 1, 1) {}
 
-void Enemies::doSomething() {};
+void Enemies::bonk() {
+    getWorld()->increaseScore(100);
+    getWorld()->playSound(SOUND_PLAYER_KICK);
+    this->killActor();
+};
 
-void Enemies::bonk() {};
 
 void Enemies::damage() {
+    this->getWorld()->increaseScore(100);
     this->killActor();
 };
 
@@ -162,12 +169,7 @@ void Enemies::move() {
     
 };
 
-//-----------Goomba Implementation ----------//
-
-Goomba::Goomba(StudentWorld *p_sw, int startX, int startY)
-:Enemies(p_sw, startX, startY, IID_GOOMBA) {};
-
-void Goomba::doSomething() {
+void Enemies::doSomething() {
     this->move();
     if (getWorld()->isIntersecting(getX(), getY())) {
         
@@ -178,45 +180,31 @@ void Goomba::doSomething() {
         }
         
     }
+
 };
+
+
+//-----------Goomba Implementation ----------//
+
+Goomba::Goomba(StudentWorld *p_sw, int startX, int startY)
+:Enemies(p_sw, startX, startY, IID_GOOMBA) {};
 
 //for when goomba is hit SPECIFICALLY BY PEACH!
-
-void Goomba::bonk() {
-    getWorld()->increaseScore(100);
-    getWorld()->playSound(SOUND_PLAYER_KICK);
-    this->killActor();
-
-};
 
 //-----------Koopa Implementation ----------//
 
 Koopa::Koopa(StudentWorld *p_sw, int startX, int startY)
 :Enemies(p_sw, startX, startY, IID_KOOPA) {};
 
-void Koopa::doSomething() {
-    this->move();
-    if (getWorld()->isIntersecting(getX(), getY())) {
-        
-        if (getWorld()->getPeach()->hasStarPower()) {
-            bonk();
-        } else {
-            
-        getWorld()->getPeach()->bonk();
-            return;
-        }
-        
-    }
-};
-
 //for when koopa is hit by player with star power
 void Koopa::bonk() {
-    
+
     //same as goomba temporarily until shell isn't made.
     getWorld()->increaseScore(100);
     getWorld()->playSound(SOUND_PLAYER_KICK);
-    
+
     this->killActor();
+    getWorld()->addActor(new Shell(getWorld(),getX(),getY(),getDirection()));
 
 };
 
@@ -289,20 +277,6 @@ void Piranha::doSomething() {
 void Piranha::setFiringDelay(int num) {
     m_firingDelay = num;
 }
-
-void Piranha::bonk() {
-    
-    getWorld()->increaseScore(100);
-    getWorld()->playSound(SOUND_PLAYER_KICK);
-    
-    this->killActor();
-    
-};
-
-void Piranha::damage() {
-    getWorld()->increaseScore(100);
-    this->killActor();
-};
 
 
 //-----------Goodies Implementation ----------//
@@ -479,8 +453,6 @@ void Block::removePower() {
     m_power = 'n';
 }
 
-void Block::doSomething() {}
-
 void Block::bonk() {
     getWorld()->playSound(SOUND_PLAYER_BONK);
     
@@ -507,8 +479,6 @@ void Block::bonk() {
 //------------Pipe Implementation------------//
 
 Pipe::Pipe(StudentWorld *p_sw, int startX, int startY) :staticObj(p_sw, startX, startY, IID_PIPE) {}
-
-void Pipe::doSomething() {}
 
 void Pipe::bonk() {
     getWorld()->playSound(SOUND_PLAYER_BONK);
@@ -652,7 +622,16 @@ void Peach::doSomething() {
     case KEY_PRESS_SPACE:
             
         if (m_hasFirePower && m_time_to_recharge_before_next_fire <= 0) {
-            getWorld()->addActor(new peachFireball(getWorld(), getX(), getY(),getDirection()));
+            
+            if (this->getDirection() == 0) {
+            getWorld()->addActor(new peachFireball(getWorld(), getX() + SPRITE_WIDTH/2, getY(),getDirection()));
+            }
+            
+            else if (this->getDirection() == 180) {
+                getWorld()->addActor(new peachFireball(getWorld(), getX() - SPRITE_WIDTH/2, getY(),getDirection()));
+
+            }
+            
             getWorld()->playSound(SOUND_PLAYER_FIRE);
             setRechargeTime(8);
         }
@@ -696,7 +675,6 @@ void Peach::doSomething() {
                 }
                 
             }
-            
 
         break;
             

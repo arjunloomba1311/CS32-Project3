@@ -231,7 +231,7 @@ bool StudentWorld::bonkAt(double x, double y) {
     
     for (it = actors.begin(); it != actors.end(); it++) {
         if ((abs(x - (*it)->getX()) < SPRITE_WIDTH) && abs(y - (*it)->getY()) < SPRITE_HEIGHT) {
-            if (!(*it)->canPassThrough()) {
+            if (!(*it)->canPassThrough() && (*it)->getAliveStatus()) {
                 (*it)->bonk();
                 return true;
             }

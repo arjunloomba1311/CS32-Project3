@@ -20,7 +20,6 @@ public:
     virtual void bonk() {};
     virtual void damage() {};
     virtual void falling(double x, double y);
-    virtual bool isPlayer() {return false;};
     virtual bool isDamageable() {return false;};
     
 private:
@@ -35,7 +34,6 @@ public:
     Peach(StudentWorld *p_sw, int startX, int startY);
     virtual void doSomething();
     virtual void bonk();
-    virtual bool isPlayer() {return true;};
     
     //set powers:
     void setJumpPower();
@@ -82,7 +80,6 @@ private:
 class Block: public staticObj {
 public:
     Block(StudentWorld* p_sw, int startX, int startY, char power);
-    virtual void doSomething();
     virtual void bonk();
     void removePower();
 private:
@@ -92,7 +89,6 @@ private:
 class Pipe: public staticObj {
 public:
     Pipe(StudentWorld* psw, int startX, int startY);
-    virtual void doSomething();
     virtual void bonk();
 };
 
@@ -102,7 +98,7 @@ class Goodies: public Actor {
 public:
     Goodies(StudentWorld *p_sw, int startX, int startY, int ImageID);
     virtual void doSomething() = 0;
-    virtual void move();
+    void move();
     
     ~Goodies() {};
 private:
@@ -136,7 +132,7 @@ public:
     Enemies(StudentWorld *p_sw, int startX, int startY,  int ImageID);
     virtual void doSomething();
     virtual void bonk();
-    virtual void move();
+    void move();
     virtual void damage();
     virtual bool isDamageable(){return true;};
     ~Enemies() {};
@@ -146,8 +142,6 @@ private:
 class Goomba: public Enemies {
 public:
     Goomba(StudentWorld *p_sw, int startX, int startY);
-    virtual void doSomething();
-    virtual void bonk();
     ~Goomba() {};
 private:
 };
@@ -155,9 +149,8 @@ private:
 class Koopa: public Enemies {
 public:
     Koopa(StudentWorld *p_sw, int startX, int startY);
-    virtual void doSomething();
-    virtual void bonk();
     virtual void damage();
+    virtual void bonk();
     ~Koopa() {};
 private:
 };
@@ -166,8 +159,6 @@ class Piranha: public Enemies {
 public:
     Piranha(StudentWorld *p_sw, int startX, int startY);
     virtual void doSomething();
-    virtual void bonk();
-    virtual void damage();
     void setFiringDelay(int num);
     ~Piranha() {};
 private:
@@ -181,7 +172,6 @@ class Projectiles: public Actor {
 public:
     Projectiles(StudentWorld *p_sw, int startX, int startY,  int ImageID, int dir);
     virtual void doSomething();
-    virtual void bonk();
     virtual void move();
 private:
 
@@ -190,15 +180,12 @@ private:
 class peachFireball: public Projectiles {
 public:
     peachFireball(StudentWorld *p_sw, int startX, int startY, int dir);
-    virtual void bonk();
 private:
 };
 
 class Shell: public Projectiles {
 public:
     Shell(StudentWorld* p_sw, int startX, int startY, int dir);
-    virtual void bonk();
-    
 private:
 };
 
@@ -206,7 +193,6 @@ class piranhaFireball: public Projectiles {
 public:
     piranhaFireball(StudentWorld* p_sw, int startX, int startY, int dir);
     virtual void doSomething();
-    virtual void bonk();
 private:
 };
 
